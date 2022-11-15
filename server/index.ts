@@ -1,19 +1,32 @@
 
 import dotenv from 'dotenv'
 import express from 'express'
-import next from './controllers/next.controller'
+import next from 'next'
+import { parse } from 'url' // eslint-disable-line n/no-deprecated-api
+import api from './api'
 
 dotenv.config()
 
 const PORT = process.env.PORT != null ? parseInt(process.env.PORT) : 3000
 
-async function main (): Promise<void> {
-  const app = express()
+const app = next({ dev: process.env.NODE_ENV !== 'production' })
+const handler = app.getRequestHandler()
 
-  app.use(await next())
+async function main (): Promise<void> {
+  const server = express()
+
+  server.use('/api', api)
+  server.use((req, res, next) => {
+    const url = parse(req.url, true)
+    handler(req, res, url)
+      .then(() => next())
+      .catch(err => next(err))
+  })
+
+  await app.prepare()
 
   return await new Promise(resolve => {
-    app.listen(PORT, () => resolve())
+    server.listen(PORT, () => resolve())
   })
 }
 
