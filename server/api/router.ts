@@ -16,7 +16,7 @@ export default function router (routes: Route[]): Router {
 
         res.status(500).json({
           success: false,
-          error
+          error: Object.assign({ message: error.toString() }, error)
         })
       })
     })
