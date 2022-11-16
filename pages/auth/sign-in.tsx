@@ -11,6 +11,7 @@ export default function SignIn () {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setErrorMessage('')
 
     const response: APIResponse<User> = await post('/api/auth/sign-in', {
       email: e.currentTarget.email.value,
@@ -25,19 +26,31 @@ export default function SignIn () {
   }
 
   return (
-    <main>
-      <h1>Sign In to Fufubay</h1>
-      {errorMessage === '' ? '' : <p>Error: {errorMessage}</p>}
-      <form onSubmit={e => { handleSubmit(e).catch(err => setErrorMessage(err)) }}>
-        <label htmlFor="email">Email</label>
-        <input type="email" name="email" id="email" required />
-        <label htmlFor="password">Password</label>
-        <input type="password" name="password" id="password" required />
-        <button type="submit">Sign In</button>
-      </form>
-      <p>
-        <Link href='/'>Home</Link>, <Link href='/auth/create-account'>Create an Account</Link>
-      </p>
-    </main>
+    <div className='container forms'>
+      <div className='form login'>
+          <h1 className='head'>Login</h1>
+
+          {errorMessage === '' ? '' : <p>Error: {errorMessage}</p>}
+
+          <form onSubmit={e => { handleSubmit(e).catch(err => console.error(err)) }}>
+              <div className='field input-field'>
+                  <input type='email' name='email' className='input' placeholder='Email' required />
+              </div>
+              <div className='field input-field'>
+                  <input type='password' name='password' className='password' placeholder='Password' required />
+              </div>
+              <div className='form link'>
+                  <Link href='/auth/forgot-password' className='forgot-pass'>Forgot password?</Link>
+              </div>
+              <div className='field input-field'>
+                  <button>Login</button>
+              </div>
+
+              <div className='form link'>
+                <Link href='/'>Home</Link>, <Link href='/auth/create-account'>Create an Account</Link>
+              </div>
+          </form>
+      </div>
+    </div>
   )
 }
