@@ -1,10 +1,19 @@
-import { Auction } from '@prisma/client'
+import { Auction, User } from '@prisma/client'
 import Router from 'next/router'
 import useForm from '../../lib/form'
-import { useAuthenticatedUser } from '../../lib/user'
+import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
+import getUser from '../../lib/user'
+
+export function getServerSideProps ({ req }: GetServerSidePropsContext): GetServerSidePropsResult<{ user: User }> {
+  const user = getUser(req.cookies.token)
+  if (user != null) {
+    return { props: { user } }
+  } else {
+    return { redirect: { destination: '/auth/sign-in', permanent: false } }
+  }
+}
 
 export default function CreateAuctionPage () {
-  useAuthenticatedUser() // redirect to sign in page if not authenticated
   const { error, register, submit } = useForm<Auction>('/api/auctions', {
     title: '',
     description: ''

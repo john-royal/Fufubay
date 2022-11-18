@@ -46,16 +46,5 @@ export default router([
       await req.signOut()
       return res.success(null)
     }
-  },
-  {
-    method: 'get',
-    path: '/user',
-    async handler (req, res) {
-      if (req.session.user != null) {
-        return res.success(req.session.user)
-      } else {
-        return res.unauthorized()
-      }
-    }
   }
 ])

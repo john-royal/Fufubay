@@ -1,10 +1,10 @@
 import { Response as RawResponse } from 'express'
-import 'express-session'
 import { User } from '@prisma/client'
 
 declare global {
   namespace Express {
     interface Request {
+      user: User | null
       signIn: (user: User) => Promise<void>
       signOut: () => Promise<void>
     }
@@ -16,11 +16,5 @@ declare global {
       notFound: () => RawResponse
       internalServerError: (error: Error) => RawResponse
     }
-  }
-}
-
-declare module 'express-session' {
-  interface SessionData {
-    user: User | null
   }
 }

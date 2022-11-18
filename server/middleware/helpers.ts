@@ -1,33 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { User } from '@prisma/client'
 
 export default function helpers (req: Request, res: Response, next: NextFunction): void {
-  Object.assign(req, {
-    async signIn (user: User) {
-      await new Promise<void>((resolve, reject) => {
-        req.session.regenerate(err => {
-          if (err != null) {
-            return reject(err)
-          }
-          req.session.user = user
-          req.session.save()
-          resolve()
-        })
-      })
-    },
-    async signOut () {
-      await new Promise<void>((resolve, reject) => {
-        req.session.user = null
-        req.session.save(err => {
-          if (err != null) { return reject(err) }
-          req.session.regenerate(err => {
-            if (err != null) { return reject(err) }
-            resolve()
-          })
-        })
-      })
-    }
-  })
   Object.assign(res, {
     success<T>(data: T) {
       return res.status(200).json({

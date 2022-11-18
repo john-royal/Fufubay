@@ -1,6 +1,4 @@
-import { RequestHandler, Request, Response, Router } from 'express'
-import helpers from '../helpers'
-import '..'
+import { Request, Response, Router } from 'express'
 
 export interface Route {
   method: 'all' | 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head'
@@ -10,8 +8,6 @@ export interface Route {
 
 export default function router (routes: Route[]): Router {
   const router = Router()
-
-  router.use(helpers as RequestHandler)
 
   for (const { method, path, handler } of routes) {
     router[method](path, (req, res) => {

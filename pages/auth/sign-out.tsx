@@ -1,10 +1,13 @@
+import Router from 'next/router'
 import { useEffect } from 'react'
-import { useUser } from '../../lib/user'
+import { get } from '../../lib/request'
 
 export default function SignOut () {
-  const [,setUser] = useUser()
   useEffect(() => {
-    void setUser()
+    get('/api/auth/sign-out')
+      .then(async () => await Router.replace('/'))
+      .catch(err => alert(err))
   })
+
   return (<></>)
 }
