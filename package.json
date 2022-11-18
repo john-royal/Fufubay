@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon",
     "build": "next build",
-    "start": "ts-node --project tsconfig.server.json server/index.ts",
+    "start": "ts-node --files --project tsconfig.server.json server/index.ts",
     "lint": "eslint --fix lib pages server",
     "migrate": "prisma db push"
   },

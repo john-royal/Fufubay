@@ -5,7 +5,6 @@
         "outDir": "dist",
         "noEmit": false
     },
-    "include": [
-        "server"
-    ]
+    "include": ["server"],
+    "files": ["server/global.d.ts"]
 }
