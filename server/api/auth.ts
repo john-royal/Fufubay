@@ -1,14 +1,6 @@
 import prisma from '../prisma'
 import router from './router'
 import * as scrypt from '../util/scrypt'
-import { User } from '@prisma/client'
-import { Request } from 'express'
-
-declare module 'express-session' {
-  interface SessionData {
-    user: User | null
-  }
-}
 
 export default router([
   {
@@ -22,11 +14,8 @@ export default router([
           password: await scrypt.hash(password)
         }
       })
-      await signIn(req, user)
-      res.status(201).json({
-        success: true,
-        data: user
-      })
+      await req.signIn(user)
+      return res.created(user)
     }
   },
   {
@@ -41,25 +30,12 @@ export default router([
       const isAuthenticated = user != null && await scrypt.compare(password, user.password)
 
       if (isAuthenticated) {
-        await signIn(req, user)
-        res.status(200).json({
-          success: true,
-          data: user
-        })
-      } else if (user != null) {
-        res.status(401).json({
-          success: false,
-          error: {
-            message: 'Wrong password'
-          }
-        })
+        await req.signIn(user)
+        return res.success(user)
+      } else if (user == null) {
+        return res.notFound()
       } else {
-        res.status(404).json({
-          success: false,
-          error: {
-            message: 'User not found'
-          }
-        })
+        return res.unauthorized('Wrong password')
       }
     }
   },
@@ -67,12 +43,8 @@ export default router([
     method: 'get',
     path: '/sign-out',
     async handler (req, res) {
-      await signOut(req)
-
-      res.status(200).json({
-        success: true,
-        data: {}
-      })
+      await req.signOut()
+      return res.success(null)
     }
   },
   {
@@ -80,42 +52,10 @@ export default router([
     path: '/user',
     async handler (req, res) {
       if (req.session.user != null) {
-        res.status(200).json({
-          success: true,
-          data: req.session.user
-        })
+        return res.success(req.session.user)
       } else {
-        res.status(401).json({
-          success: false,
-          error: { message: 'User is not signed in' }
-        })
+        return res.unauthorized()
       }
     }
   }
 ])
-
-async function signIn (req: Request, user: User): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    req.session.regenerate(err => {
-      if (err != null) {
-        return reject(err)
-      }
-      req.session.user = user
-      req.session.save()
-      resolve()
-    })
-  })
-}
-
-async function signOut (req: Request): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    req.session.user = null
-    req.session.save(err => {
-      if (err != null) { return reject(err) }
-      req.session.regenerate(err => {
-        if (err != null) { return reject(err) }
-        resolve()
-      })
-    })
-  })
-}

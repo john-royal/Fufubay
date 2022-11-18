@@ -1,53 +1,43 @@
-import { FormEvent, useState } from 'react'
 import Link from 'next/link'
-import Router from 'next/router'
 import { User } from '@prisma/client'
-import { APIResponse, post } from '../../lib/request'
+import useForm from '../../lib/form'
+import { useRouter } from 'next/router'
 import { useUser } from '../../lib/user'
 
 export default function SignIn () {
+  const router = useRouter()
   const [, setUser] = useUser()
-  const [errorMessage, setErrorMessage] = useState('')
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setErrorMessage('')
-
-    const response: APIResponse<User> = await post('/api/auth/sign-in', {
-      email: e.currentTarget.email.value,
-      password: e.currentTarget.password.value
-    })
-    if (response.success) {
-      await setUser(response.data)
-      await Router.push('/auth/profile')
-    } else {
-      setErrorMessage(response.error.message)
-    }
-  }
+  const { error, register, submit } = useForm<User>('/api/auth/sign-in', {
+    email: '',
+    password: ''
+  }, async user => {
+    await setUser(user)
+    await router.push(router.query.redirect as string ?? '/auth/profile')
+  })
 
   return (
     <div className='container forms'>
       <div className='form login'>
-          <h1 className='head'>Login</h1>
+          <h1 className='head'>Sign In</h1>
 
-          {errorMessage === '' ? '' : <p>Error: {errorMessage}</p>}
+          {error === '' ? '' : <p>Error: {error}</p>}
 
-          <form onSubmit={e => { handleSubmit(e).catch(err => console.error(err)) }}>
+          <form onSubmit={submit}>
               <div className='field input-field'>
-                  <input type='email' name='email' className='input' placeholder='Email' required />
+                  <input type='email' {...register('email')} className='input' placeholder='Email' required />
               </div>
               <div className='field input-field'>
-                  <input type='password' name='password' className='password' placeholder='Password' required />
+                  <input type='password' {...register('password')} className='password' placeholder='Password'required />
               </div>
               <div className='form link'>
                   <Link href='/auth/forgot-password' className='forgot-pass'>Forgot password?</Link>
               </div>
               <div className='field input-field'>
-                  <button>Login</button>
+                  <button>Sign In</button>
               </div>
 
               <div className='form link'>
-                <Link href='/'>Home</Link>, <Link href='/auth/create-account'>Create an Account</Link>
+                <Link href='/'>Home</Link>, <Link href={{ pathname: '/auth/create-account', query: router.query }}>Create an Account</Link>
               </div>
           </form>
       </div>

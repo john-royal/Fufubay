@@ -30,7 +30,7 @@ export function useUser (): [User | undefined, UserMutator] {
 export function useAuthenticatedUser (): [User, UserMutator] {
   const [user, setUser] = useUser()
   useEffect(() => {
-    if (user == null) void Router.replace('/auth/sign-in')
+    if (user == null) void Router.replace(`/auth/sign-in?redirect=${window.location.pathname}`)
   })
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return [user!, setUser]
