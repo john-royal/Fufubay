@@ -1,7 +1,9 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import useUser from '../lib/user'
 
 export default function Navbar () {
+  const router = useRouter()
   const [user] = useUser()
 
   return (
@@ -54,7 +56,7 @@ export default function Navbar () {
                 <div className='navbar-item' style={{ display: user != null ? 'block' : 'none' }}>
                     <div className='level'>
                         <Link href='/auth/profile' className='level-item mr-3 has-text-weight-bold'>{user?.email}</Link>
-                        <Link href='/auth/sign-out' className='button is-light level-item'>
+                        <Link href={`/auth/sign-out?redirect=${router.asPath}`} className='button is-light level-item'>
                             Sign out
                         </Link>
                     </div>
