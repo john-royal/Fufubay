@@ -33,9 +33,9 @@ export default router([
         await req.signIn(user)
         return res.success(user)
       } else if (user == null) {
-        return res.notFound()
+        return res.notFound('We couldn’t find that account.')
       } else {
-        return res.unauthorized('Wrong password')
+        return res.unauthorized('Wrong password.')
       }
     }
   },

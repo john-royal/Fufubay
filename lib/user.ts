@@ -1,10 +1,10 @@
 import { User } from '@prisma/client'
-import { verify } from 'jsonwebtoken'
+import { createContext, useContext } from 'react'
 
-export default function getUser (token: string | undefined): User | null {
-  try {
-    return verify(token ?? '', process.env.JWT_SECRET ?? '') as User
-  } catch (error) {
-    return null
-  }
+type UserState = [User | null, (user: User | null) => void]
+
+export const AuthContext = createContext<UserState>([null, user => {}])
+
+export default function useUser (): UserState {
+  return useContext(AuthContext)
 }

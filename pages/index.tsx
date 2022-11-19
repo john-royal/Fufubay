@@ -1,43 +1,28 @@
-import { Auction, User } from '@prisma/client'
+import { Auction } from '@prisma/client'
 import { GetServerSidePropsContext } from 'next'
 import Link from 'next/link'
 import { get } from '../lib/request'
-import getUser from '../lib/user'
 
 export async function getServerSideProps ({ req }: GetServerSidePropsContext) {
-  const user = getUser(req.cookies.token)
   const response = await get<Auction[]>('/api/auctions')
   return {
     props: {
-      auctions: response.success ? response.data : [],
-      user
+      auctions: response.success ? response.data : []
     }
   }
 }
 
-export default function Home ({ auctions, user }: { auctions: Auction[], user?: User }) {
+export default function Home ({ auctions }: { auctions: Auction[] }) {
   return (
-    <main>
-      <h1>Fufubay</h1>
-      <h2>Auctions</h2>
+    <main className='container mt-5'>
       <ul>
       {auctions.map(auction =>
         <li key={auction.id}>
-          <a href={`/auctions/${auction.id}`}>{auction.title}</a>
+          <Link href={`/auctions/${auction.id}`}>{auction.title}</Link>
         </li>
       )}
       </ul>
-      <h2>Links</h2>
-      <ul style={{ display: user != null ? 'block' : 'none' }}>
-        <li><Link href='/auth/profile'>My Profile</Link></li>
-        <li><Link href='/auctions/create'>New Auction</Link></li>
-        <li><Link href='/auth/sign-out'>Sign Out</Link></li>
-      </ul>
-      <ul style={{ display: user == null ? 'block' : 'none' }}>
-        <li><Link href='/auth/sign-in'>Sign In</Link></li>
-        <li><Link href='/auth/create-account'>Create an Account</Link></li>
-        <li><Link href='/auctions/create'>New Auction</Link></li>
-      </ul>
+      <Link href='/auctions/create' className='button'>Create a new auction</Link>
     </main>
   )
 }

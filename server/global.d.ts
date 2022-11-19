@@ -13,7 +13,7 @@ declare global {
       created: <T>(data: T) => RawResponse
       badRequest: () => RawResponse
       unauthorized: (message?: string) => RawResponse
-      notFound: () => RawResponse
+      notFound: (message?: string) => RawResponse
       internalServerError: (error: Error) => RawResponse
     }
   }

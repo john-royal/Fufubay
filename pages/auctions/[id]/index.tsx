@@ -22,11 +22,11 @@ export async function getServerSideProps ({ params, req }: GetServerSidePropsCon
 
 export default function AuctionPage ({ auction }: { auction: AuctionWithSeller }) {
   return (
-    <>
-        <h1>{auction.title}</h1>
+    <div className='container mt-5'>
+      <h1 className='title'>{auction.title}</h1>
         <p>{auction.description}</p>
         <p>Sold by <Link href={`/users/${auction.sellerId}`} style={{ fontWeight: 'bold' }}>{auction.seller.email}</Link></p>
-        <pre>{JSON.stringify(auction)}</pre>
-    </>
+        <pre>{JSON.stringify(auction, null, 2)}</pre>
+    </div>
   )
 }
