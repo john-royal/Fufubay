@@ -12,7 +12,7 @@ export default function SignIn () {
     password: ''
   }, async user => {
     setUser(user)
-    await router.push(router.query.redirect as string ?? '/auth/profile')
+    await router.push(router.query.redirect as string ?? `/users/${user.id}`)
   })
 
   return (

@@ -53,24 +53,29 @@ export default function Navbar () {
             </div>
 
             <div className='navbar-end'>
-                <div className='navbar-item' style={{ display: user != null ? 'block' : 'none' }}>
-                    <div className='level'>
-                        <Link href='/auth/profile' className='level-item mr-3 has-text-weight-bold'>{user?.email}</Link>
-                        <Link href={`/auth/sign-out?redirect=${router.asPath}`} className='button is-light level-item'>
-                            Sign out
-                        </Link>
+                {user != null
+                  ? <>
+                    <div className='navbar-item'>
+                        <div className='level'>
+                            <Link href={`/users/${user.id}`} className='level-item mr-3 has-text-weight-bold'>{user.name}</Link>
+                            <Link href={`/auth/sign-out?redirect=${router.asPath}`} className='button is-light level-item'>
+                                Sign out
+                            </Link>
+                        </div>
                     </div>
-                </div>
-                <div className='navbar-item' style={{ display: user == null ? 'block' : 'none' }}>
-                    <div className='buttons'>
-                        <Link href='/auth/create-account' className='button is-primary'>
-                            <strong>Sign up</strong>
-                        </Link>
-                        <Link href='/auth/sign-in' className='button is-light'>
-                            Log in
-                        </Link>
+                  </>
+                  : <>
+                    <div className='navbar-item'>
+                        <div className='buttons'>
+                            <Link href='/auth/create-account' className='button is-primary'>
+                                <strong>Sign up</strong>
+                            </Link>
+                            <Link href='/auth/sign-in' className='button is-light'>
+                                Log in
+                            </Link>
+                        </div>
                     </div>
-                </div>
+                  </>}
             </div>
         </div>
     </div>

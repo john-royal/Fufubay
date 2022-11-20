@@ -7,12 +7,13 @@ import useUser from '../../lib/user'
 export default function CreateAccount () {
   const router = useRouter()
   const [, setUser] = useUser()
-  const { error, register, submit, working } = useForm<User>('/api/auth/create-account', {
+  const { error, register, submit, working } = useForm<User>('/api/users', {
+    name: '',
     email: '',
     password: ''
   }, async user => {
     setUser(user)
-    await router.push(router.query.redirect as string ?? '/auth/profile')
+    await router.push(router.query.redirect as string ?? `/users/${user.id}`)
   })
 
   return (
@@ -24,6 +25,12 @@ export default function CreateAccount () {
       <div className={'notification is-danger' + (error === '' ? ' is-hidden' : '')}><strong>{error}</strong> Please try again.</div>
 
         <form onSubmit={submit}>
+          <div className='field'>
+            <label htmlFor='name' className='label'>Name</label>
+            <div className='control'>
+              <input type='text' {...register('name')} className='input' placeholder='Name' required />
+            </div>
+          </div>
           <div className='field'>
             <label htmlFor='email' className='label'>Email</label>
             <div className='control'>
