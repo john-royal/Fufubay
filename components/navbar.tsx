@@ -7,6 +7,7 @@ import AuthModal, { AuthScreen } from './auth'
 export default function Navbar (pagePropsForDebug: any) {
   const [modal, setModal] = useState<AuthScreen | null>(null)
   const [user, setUser] = useUser()
+  const [showMenu, setShowMenu] = useState(false)
 
   const signOut = () => {
     get('/api/auth/sign-out')
@@ -23,14 +24,14 @@ export default function Navbar (pagePropsForDebug: any) {
                 Fufubay
             </Link>
 
-            <button role='button' className='navbar-burger' aria-label='menu' aria-expanded='false' data-target='navbarBasicExample'>
+            <button role='button' className={`navbar-burger ${showMenu ? 'is-active' : ''}`} aria-label='menu' aria-expanded={showMenu} data-target='navbar-menu' onClick={() => setShowMenu(!showMenu)}>
                 <span aria-hidden='true'></span>
                 <span aria-hidden='true'></span>
                 <span aria-hidden='true'></span>
             </button>
         </div>
 
-        <div id='navbarBasicExample' className='navbar-menu'>
+        <div id='navbar-menu' className={`navbar-menu ${showMenu ? 'is-active' : ''}`}>
             <div className='navbar-start'>
                 <Link href='/' className='navbar-item'>
                     Home
@@ -41,9 +42,9 @@ export default function Navbar (pagePropsForDebug: any) {
                 </Link>
 
                 <div className='navbar-item has-dropdown is-hoverable'>
-                    <Link href='#' className='navbar-link'>
+                    <a className='navbar-link'>
                         Debug
-                    </Link>
+                    </a>
                     <div className='navbar-dropdown p-4'>
                         <h2 className='has-text-weight-bold'>Page Props</h2>
                         <pre>{JSON.stringify(pagePropsForDebug, null, 2)}</pre>
