@@ -57,7 +57,7 @@ export default function Navbar (pagePropsForDebug: any) {
                   ? <>
                     <div className='navbar-item'>
                         <div className='level'>
-                            <span className='level-item mr-3'>Hi,&nbsp;<Link href={userURL(user)} className='has-text-weight-bold'>{user.username}</Link></span>
+                            <span className='level-item mr-3'>Hi,&nbsp;<Link href='/settings' className='has-text-weight-bold'>{user.username}</Link></span>
                             <button className='button is-light level-item' onClick={signOut}>
                                 Sign Out
                             </button>
