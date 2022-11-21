@@ -86,5 +86,21 @@ export default router([
       ])
       return res.success(null)
     }
+  },
+  {
+    method: 'post',
+    path: '/setup-intents',
+    async handler (req, res) {
+      if (req.user == null) {
+        return res.unauthorized()
+      }
+      const [customer, setupIntent] = await Promise.all([
+        stripe.customers.retrieve(req.user.stripeCustomerID),
+        stripe.setupIntents.create({
+          customer: req.user.stripeCustomerID
+        })
+      ])
+      return res.success({ customer, setupIntent })
+    }
   }
 ])

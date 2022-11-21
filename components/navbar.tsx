@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { get } from '../lib/request'
-import { userURL } from '../lib/url'
 import useUser from '../lib/user'
 import AuthModal, { AuthScreen } from './auth'
 
