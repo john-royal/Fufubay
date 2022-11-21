@@ -10,10 +10,10 @@ interface APISuccessResponse<T> {
 
 export type APIResponse<T> = APISuccessResponse<T> | APIErrorResponse
 
-export async function get<T> (url: string, headers?: Record<string, any>): Promise<APIResponse<T>> {
+export async function get<T> (url: string): Promise<APIResponse<T>> {
   const response = await fetch(withURL(url), {
     method: 'GET',
-    headers: Object.assign({}, headers, { 'Content-Type': 'application/json' })
+    headers: { 'Content-Type': 'application/json' }
   })
   return await response.json() as APIResponse<T>
 }

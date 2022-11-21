@@ -2,6 +2,7 @@ import { Auction } from '@prisma/client'
 import Router from 'next/router'
 import { useEffect } from 'react'
 import useForm from '../../lib/form'
+import { auctionURL } from '../../lib/url'
 import useUser from '../../lib/user'
 
 export default function CreateAuctionPage () {
@@ -14,8 +15,8 @@ export default function CreateAuctionPage () {
   const { error, register, submit, working } = useForm<Auction>('/api/auctions', {
     title: '',
     description: ''
-  }, async result => {
-    await Router.push(`/auctions/${result.id}`)
+  }, async auction => {
+    await Router.push(auctionURL(auction))
   })
 
   return (

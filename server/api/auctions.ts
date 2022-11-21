@@ -1,4 +1,4 @@
-import { Auction } from '@prisma/client'
+import { Auction, Prisma } from '@prisma/client'
 import prisma from '../prisma'
 import router from './router'
 
@@ -7,7 +7,11 @@ export default router([
     method: 'get',
     path: '/',
     async handler (req, res) {
-      const auctions = await prisma.auction.findMany()
+      const where: Prisma.AuctionWhereInput = {}
+      if (req.params.sellerID != null) {
+        where.sellerID = parseInt(req.params.sellerID)
+      }
+      const auctions = await prisma.auction.findMany({ where })
       return res.success(auctions)
     }
   },
@@ -23,6 +27,7 @@ export default router([
         data: {
           title: auction.title,
           description: auction.description,
+          slug: auction.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
           seller: {
             connect: {
               id: req.user.id
@@ -56,7 +61,7 @@ export default router([
         where: { id: parseInt(req.params.id) },
         include: { seller: true }
       })
-      if (req.user == null || auction.sellerId !== req.user.id) {
+      if (req.user == null || auction.sellerID !== req.user.id) {
         return res.unauthorized()
       }
       await prisma.auction.update({
@@ -73,7 +78,7 @@ export default router([
       const auction = await prisma.auction.findUniqueOrThrow({
         where: { id: parseInt(req.params.id) }
       })
-      if (req.user == null || auction.sellerId !== req.user.id) {
+      if (req.user == null || auction.sellerID !== req.user.id) {
         return res.unauthorized()
       }
       await prisma.auction.delete({ where: { id: auction.id } })

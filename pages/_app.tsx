@@ -18,10 +18,10 @@ export default function FufubayApp ({ Component, pageProps, userFromServer }: Fu
     <AuthContext.Provider value={[user, setUser]}>
       <Head>
         <title>Fufubay</title>
-        <meta name="description" content="Sell your stuff!" />
-        <link rel="icon" href="/favicon.ico" />
+        <meta name='description' content='Sell your stuff!' />
+        <link rel='icon' href='/favicon.ico' />
       </Head>
-      <Navbar />
+      <Navbar {...pageProps} />
       <Component {...pageProps} />
     </AuthContext.Provider>
   )

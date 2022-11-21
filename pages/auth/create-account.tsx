@@ -8,7 +8,7 @@ export default function CreateAccount () {
   const router = useRouter()
   const [, setUser] = useUser()
   const { error, register, submit, working } = useForm<User>('/api/users', {
-    name: '',
+    username: '',
     email: '',
     password: ''
   }, async user => {
@@ -26,9 +26,9 @@ export default function CreateAccount () {
 
         <form onSubmit={submit}>
           <div className='field'>
-            <label htmlFor='name' className='label'>Name</label>
+            <label htmlFor='username' className='label'>Username</label>
             <div className='control'>
-              <input type='text' {...register('name')} className='input' placeholder='Name' required />
+              <input type='text' {...register('username')} className='input' placeholder='Username' required />
             </div>
           </div>
           <div className='field'>

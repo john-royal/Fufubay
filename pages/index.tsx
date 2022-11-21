@@ -1,6 +1,6 @@
 import { Auction } from '@prisma/client'
 import { GetServerSidePropsContext } from 'next'
-import Link from 'next/link'
+import AuctionItem from '../components/auction-item'
 import { get } from '../lib/request'
 
 export async function getServerSideProps ({ req }: GetServerSidePropsContext) {
@@ -14,15 +14,10 @@ export async function getServerSideProps ({ req }: GetServerSidePropsContext) {
 
 export default function Home ({ auctions }: { auctions: Auction[] }) {
   return (
-    <main className='container mt-5'>
-      <ul>
+    <main className='container m-5'>
       {auctions.map(auction =>
-        <li key={auction.id}>
-          <Link href={`/auctions/${auction.id}`}>{auction.title}</Link>
-        </li>
+        <AuctionItem key={auction.id} auction={auction} />
       )}
-      </ul>
-      <Link href='/auctions/create' className='button'>Create a new auction</Link>
     </main>
   )
 }

@@ -1,3 +1,4 @@
+import { User } from '@prisma/client'
 import normalizeEmail from 'normalize-email'
 import prisma from '../prisma'
 import stripe from '../stripe'
@@ -17,21 +18,18 @@ export default router([
     method: 'post',
     path: '/',
     async handler (req, res) {
-      const { name, email, password } = {
-        name: req.body.name as string,
+      const { username, email, password } = {
+        username: req.body.username as string,
         email: normalizeEmail(req.body.email),
         password: await hash(req.body.password)
       }
-      const stripeCustomer = await stripe.customers.create({
-        name,
-        email
-      })
+      const stripeCustomer = await stripe.customers.create()
       const user = await prisma.user.create({
         data: {
-          name,
+          username,
           email,
           password,
-          stripeCustomerId: stripeCustomer.id
+          stripeCustomerID: stripeCustomer.id
         }
       })
       await req.signIn(user)
@@ -49,14 +47,28 @@ export default router([
       if (user == null) {
         return res.notFound()
       }
-      if (id === req.user?.id) {
-        const stripeCustomer = await stripe.customers.retrieve(user.stripeCustomerId)
-        Object.assign(user, { stripeCustomer })
-      }
       return res.success(user)
     }
   },
-  // TODO: Add update route.
+  {
+    method: 'patch',
+    path: '/:id',
+    async handler (req, res) {
+      const id = parseInt(req.params.id)
+      if (req.user == null || id !== req.user.id) {
+        return res.unauthorized()
+      }
+      if (typeof req.body.password === 'string') {
+        req.body.password = await hash(req.body.password)
+      }
+      const user = await prisma.user.update({
+        where: { id },
+        data: req.body as User
+      })
+      await req.signIn(user)
+      return res.success(user)
+    }
+  },
   {
     method: 'delete',
     path: '/:id',
@@ -70,7 +82,7 @@ export default router([
       })
       await Promise.all([
         prisma.user.delete({ where: { id } }),
-        stripe.customers.del(user.stripeCustomerId)
+        stripe.customers.del(user.stripeCustomerID)
       ])
       return res.success(null)
     }
