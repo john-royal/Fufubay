@@ -19,7 +19,7 @@ export default function CreateAccountForm () {
   return (
     <div className={modal === AuthScreen.CREATE_ACCOUNT ? '' : 'is-hidden'}>
       <h1 className='title'>Create an Account</h1>
-      <p className='subtitle'>or <button onClick={e => setModal(AuthScreen.SIGN_IN)}>Sign In</button></p>
+      <p className='subtitle'>or <a onClick={e => setModal(AuthScreen.SIGN_IN)}>Sign In</a></p>
       <div className='form'>
 
       <div className={'notification is-danger' + (error === '' ? ' is-hidden' : '')}><strong>{error}</strong> Please try again.</div>

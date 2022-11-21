@@ -15,17 +15,19 @@ export default function AuthModal ({ required, state }: { required: boolean, sta
   const [modal, setModal] = state
   const router = useRouter()
 
+  const handleClose = () => required ? router.back() : setModal(null)
+
   return (
     <AuthModalContext.Provider value={state}>
       <div className={`modal ${modal != null ? 'is-active' : ''}`}>
-        <div className='modal-background'></div>
+        <div className='modal-background' onClick={handleClose}></div>
         <div className='modal-card'>
-          <div className='modal-card-body'>
+          <div className='modal-card-body p-6'>
             <SignInForm />
             <CreateAccountForm />
           </div>
         </div>
-        <button className='modal-close is-large' aria-label='Close' onClick={e => required ? router.back() : setModal(null)}></button>
+        <button className='modal-close is-large' aria-label='Close' onClick={handleClose}></button>
       </div>
     </AuthModalContext.Provider>
   )

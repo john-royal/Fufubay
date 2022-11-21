@@ -19,7 +19,7 @@ export default function SignInForm () {
   return (
     <div className={modal === AuthScreen.SIGN_IN ? '' : 'is-hidden'}>
       <h1 className='title'>Sign In</h1>
-      <p className='subtitle'>or <button onClick={e => setModal(AuthScreen.CREATE_ACCOUNT)}>Create an Account</button></p>
+      <p className='subtitle'>or <a onClick={e => setModal(AuthScreen.CREATE_ACCOUNT)}>Create an Account</a></p>
       <div className='form'>
 
         <div className={'notification is-danger' + (error === '' ? ' is-hidden' : '')}><strong>{error}</strong> Please try again.</div>
