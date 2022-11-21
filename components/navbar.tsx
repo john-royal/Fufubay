@@ -1,11 +1,21 @@
 import Link from 'next/link'
-import { useRouter } from 'next/router'
+import { useState } from 'react'
+import { get } from '../lib/request'
 import { userURL } from '../lib/url'
 import useUser from '../lib/user'
+import AuthModal, { AuthScreen } from './auth'
 
 export default function Navbar (pagePropsForDebug: any) {
-  const router = useRouter()
-  const [user] = useUser()
+  const [modal, setModal] = useState<AuthScreen | null>(null)
+  const [user, setUser] = useUser()
+
+  const signOut = () => {
+    get('/api/auth/sign-out')
+      .then(async () => {
+        setUser(null)
+      })
+      .catch(err => alert(err))
+  }
 
   return (
     <div className='navbar' role='navigation' aria-label='main navigation'>
@@ -48,26 +58,27 @@ export default function Navbar (pagePropsForDebug: any) {
                     <div className='navbar-item'>
                         <div className='level'>
                             <span className='level-item mr-3'>Hi,&nbsp;<Link href={userURL(user)} className='has-text-weight-bold'>{user.username}</Link></span>
-                            <Link href={`/auth/sign-out?redirect=${router.asPath}`} className='button is-light level-item'>
+                            <button className='button is-light level-item' onClick={signOut}>
                                 Sign Out
-                            </Link>
+                            </button>
                         </div>
                     </div>
                   </>
                   : <>
                     <div className='navbar-item'>
                         <div className='buttons'>
-                            <Link href='/auth/create-account' className='button is-primary'>
+                            <button className='button is-primary' onClick={e => setModal(AuthScreen.CREATE_ACCOUNT)}>
                                 <strong>Sign up</strong>
-                            </Link>
-                            <Link href='/auth/sign-in' className='button is-light'>
+                            </button>
+                            <button className='button is-light' onClick={e => setModal(AuthScreen.SIGN_IN)}>
                                 Log in
-                            </Link>
+                            </button>
                         </div>
                     </div>
                   </>}
             </div>
         </div>
+        <AuthModal required={false} state={[modal, setModal]} />
     </div>
   )
 }

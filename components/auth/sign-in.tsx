@@ -1,24 +1,25 @@
 import Link from 'next/link'
 import { User } from '@prisma/client'
 import useForm from '../../lib/form'
-import { useRouter } from 'next/router'
 import useUser from '../../lib/user'
+import { useContext } from 'react'
+import { AuthModalContext, AuthScreen } from '.'
 
-export default function SignIn () {
-  const router = useRouter()
+export default function SignInForm () {
+  const [modal, setModal] = useContext(AuthModalContext)
   const [, setUser] = useUser()
   const { error, register, submit, working } = useForm<User>('/api/auth/sign-in', {
     email: '',
     password: ''
   }, async user => {
     setUser(user)
-    await router.push(router.query.redirect as string ?? `/users/${user.id}`)
+    setModal(null)
   })
 
   return (
-    <div className='container p-6 column mt-5' style={{ maxWidth: 480 }}>
+    <div className={modal === AuthScreen.SIGN_IN ? '' : 'is-hidden'}>
       <h1 className='title'>Sign In</h1>
-      <p className='subtitle'>or <Link href={{ pathname: '/auth/create-account', query: router.query }}>Create an Account</Link></p>
+      <p className='subtitle'>or <button onClick={e => setModal(AuthScreen.CREATE_ACCOUNT)}>Create an Account</button></p>
       <div className='form'>
 
         <div className={'notification is-danger' + (error === '' ? ' is-hidden' : '')}><strong>{error}</strong> Please try again.</div>
