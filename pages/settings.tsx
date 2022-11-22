@@ -1,35 +1,79 @@
 import Link from 'next/link'
-import { AddressElement, Elements, PaymentElement } from '@stripe/react-stripe-js'
-import { loadStripe } from '@stripe/stripe-js'
+import { AddressElement, Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
+import { loadStripe, StripeElements } from '@stripe/stripe-js'
 import Stripe from 'stripe'
-import { GetServerSidePropsContext } from 'next'
-import { useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
+import useUser from '../lib/user'
+import { post } from '../lib/request'
+import Modal, { ModalProps } from '../components/modal'
+import Router from 'next/router'
 
 const stripePromise = loadStripe('pk_test_m8tbfxzzrHp1twla3WP3Cwar003SJUXAyx')
 
-interface Props {
-  customer: Stripe.Customer
-  setupIntent: Stripe.Response<Stripe.SetupIntent>
-}
+function StripeModal ({ isActive, handleClose, children }: ModalProps) {
+  const [user] = useUser()
+  const [setupIntent, setSetupIntent] = useState<Stripe.SetupIntent | null>()
 
-export async function getServerSideProps ({ req }: GetServerSidePropsContext) {
-  const response = await fetch('http://localhost:8080/api/users/setup-intents', {
-    method: 'POST',
-    headers: req.headers as Record<string, string>
+  useEffect(() => {
+    if (setupIntent != null) return
+
+    post<{}, { setupIntent: Stripe.SetupIntent }>(`/api/users/${user?.id as number}/setup-intents`, {})
+      .then(response => {
+        console.log(response)
+        if (response.success) setSetupIntent(response.data.setupIntent)
+        else throw new Error(response.error.message)
+      })
+      .catch(error => { throw error })
   })
-  const json = await response.json()
-  return {
-    props: { ...json.data }
-  }
-}
 
-export default function Settings ({ customer, setupIntent }: Props) {
-  const [showEditPayment, setShowEditPayment] = useState(false)
-  const [showEditAddress, setShowEditAddress] = useState(false)
-  const options = { clientSecret: setupIntent.client_secret as string }
+  const Form = () => {
+    const [working, setWorking] = useState(false)
+    const stripe = useStripe()
+    const elements = useElements()
+    const handleSave = (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+
+      setWorking(true)
+
+      ;(async () => {
+        const result = await stripe?.confirmSetup({ elements: elements as StripeElements, confirmParams: { return_url: window.location.href } })
+        if (result?.error != null) {
+          alert(result.error.message)
+        } else {
+          handleClose()
+        }
+      })()
+        .catch(error => { alert(error) })
+        .finally(() => setWorking(false))
+    }
+
+    return (
+        <form onSubmit={handleSave}>
+            {children}
+            <button className={`button is-primary ${working ? 'is-loading' : ''}`}>Save</button>
+        </form>
+    )
+  }
+
+  const Body = (options: { clientSecret: string }) => {
+    return <Elements stripe={stripePromise} options={options}>
+        <Form />
+    </Elements>
+  }
 
   return (
-    <Elements stripe={stripePromise} options={options}>
+    <Modal isActive={isActive} handleClose={handleClose}>
+        {setupIntent != null ? <Body clientSecret={setupIntent.client_secret as string} /> : <></>}
+    </Modal>
+  )
+}
+
+export default function Settings () {
+  const [editingAddress, setEditingAddress] = useState(false)
+  const [editingPayment, setEditingPayment] = useState(false)
+
+  return (
+    <>
         <div>
             <h1 className='has-text-centered is-size-1'>Settings</h1>
         </div>
@@ -65,30 +109,25 @@ export default function Settings ({ customer, setupIntent }: Props) {
             </div>
             <div className='box'>
                 <h2 className='has-text-centered is-size-3 py-3 my-3'>Address</h2>
-                {/* TODO: Display address details more elegantly. */}
-                <h3 className='has-text-centered'>{JSON.stringify(customer.address)}</h3>
-                <form className={showEditAddress ? '' : 'is-hidden'}>
-                    <AddressElement options={{ mode: 'shipping' }} />
-                    <button className='button is-primary'>Save</button>
-                    {/* TODO: When form is submitted, confirm setup intent to save information. */}
-                </form>
+                {/* TODO: Fetch and display user address details. */}
                 <div className='has-text-centered'>
-                    <button className='button is-small' onClick={e => setShowEditAddress(true)}>Edit</button>
+                    <button className='button is-small' onClick={e => setEditingAddress(true)}>Edit</button>
                 </div>
+                <StripeModal isActive={editingAddress} handleClose={() => setEditingAddress(false)}>
+                    <AddressElement options={{ mode: 'shipping' }} />
+                </StripeModal>
             </div>
             <div className='box'>
                 <h2 className='has-text-centered is-size-3 py-3 my-3'>Billing</h2>
                 {/* TODO: Display basic card details (e.g. "Visa ending in 0000") */}
-                <form className={showEditPayment ? '' : 'is-hidden'}>
-                    <PaymentElement />
-                    <button className='button is-primary'>Save</button>
-                    {/* TODO: When form is submitted, confirm setup intent to save information. */}
-                </form>
                 <div className='has-text-centered'>
-                    <button className='button is-small' onClick={e => setShowEditPayment(true)}>Edit</button>
+                    <button className='button is-small' onClick={e => setEditingPayment(true)}>Edit</button>
                 </div>
+                <StripeModal isActive={editingPayment} handleClose={() => setEditingPayment(false)}>
+                    <PaymentElement />
+                </StripeModal>
             </div>
         </div>
-    </Elements>
+    </>
   )
 }

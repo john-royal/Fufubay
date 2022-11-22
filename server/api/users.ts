@@ -91,9 +91,10 @@ export default router([
   },
   {
     method: 'post',
-    path: '/setup-intents',
+    path: '/:id/setup-intents',
     async handler (req, res) {
-      if (req.user == null) {
+      const id = parseInt(req.params.id)
+      if (req.user == null || id !== req.user.id) {
         return res.unauthorized()
       }
       const [customer, setupIntent] = await Promise.all([
