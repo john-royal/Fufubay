@@ -8,10 +8,10 @@ export default router([
     path: '/',
     async handler (req, res) {
       const where: Prisma.AuctionWhereInput = {}
-      if (req.params.sellerID != null) {
-        where.sellerID = parseInt(req.params.sellerID)
+      if (typeof req.query.sellerID === 'string') {
+        where.sellerID = parseInt(req.query.sellerID)
       }
-      const auctions = await prisma.auction.findMany({ where })
+      const auctions = await prisma.auction.findMany({ where, orderBy: { createdAt: 'desc' } })
       return res.success(auctions)
     }
   },
