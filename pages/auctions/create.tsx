@@ -1,14 +1,14 @@
 import { Auction } from '@prisma/client'
 import Router from 'next/router'
 import { useEffect, useState } from 'react'
-import AuthModal, { AuthScreen } from '../../components/auth'
+import AuthModal, { Screen } from '../../components/auth'
 import useForm from '../../lib/form'
 import { auctionURL } from '../../lib/url'
 import useUser from '../../lib/user'
 
 export default function CreateAuctionPage () {
   const [user] = useUser()
-  const [modal, setModal] = useState<AuthScreen | null>(null)
+  const [modal, setModal] = useState<Screen>(null)
   const { error, register, submit, working } = useForm<Auction>('/api/auctions', {
     title: '',
     description: ''
@@ -17,7 +17,7 @@ export default function CreateAuctionPage () {
   })
 
   useEffect(() => {
-    if (user == null) setModal(AuthScreen.SIGN_IN)
+    if (user == null) setModal('sign-in')
   }, [user])
 
   return (

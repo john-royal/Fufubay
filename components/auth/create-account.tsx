@@ -1,11 +1,9 @@
 import { User } from '@prisma/client'
 import useForm from '../../lib/form'
 import useUser from '../../lib/user'
-import { useContext } from 'react'
-import { AuthModalContext, AuthScreen } from '.'
+import { SetScreen } from '.'
 
-export default function CreateAccountForm () {
-  const [modal, setModal] = useContext(AuthModalContext)
+export default function CreateAccountForm ({ setScreen }: { setScreen: SetScreen }) {
   const [, setUser] = useUser()
   const { error, register, submit, working } = useForm<User>('/api/users', {
     username: '',
@@ -13,13 +11,13 @@ export default function CreateAccountForm () {
     password: ''
   }, async user => {
     setUser(user)
-    setModal(null)
+    setScreen(null)
   })
 
   return (
-    <div className={modal === AuthScreen.CREATE_ACCOUNT ? '' : 'is-hidden'}>
+    <>
       <h1 className='title'>Create an Account</h1>
-      <p className='subtitle'>or <a onClick={e => setModal(AuthScreen.SIGN_IN)}>Sign In</a></p>
+      <p className='subtitle'>or <a onClick={e => setScreen('sign-in')}>Sign In</a></p>
       <div className='form'>
 
       <div className={'notification is-danger' + (error === '' ? ' is-hidden' : '')}><strong>{error}</strong> Please try again.</div>
@@ -50,6 +48,6 @@ export default function CreateAccountForm () {
           </div>
         </form>
       </div>
-    </div>
+    </>
   )
 }

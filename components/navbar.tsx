@@ -2,10 +2,10 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { get } from '../lib/request'
 import useUser from '../lib/user'
-import AuthModal, { AuthScreen } from './auth'
+import AuthModal, { Screen } from './auth'
 
 export default function Navbar (pagePropsForDebug: any) {
-  const [modal, setModal] = useState<AuthScreen | null>(null)
+  const [modal, setModal] = useState<Screen | null>(null)
   const [user, setUser] = useUser()
   const [showMenu, setShowMenu] = useState(false)
 
@@ -67,10 +67,10 @@ export default function Navbar (pagePropsForDebug: any) {
                   : <>
                     <div className='navbar-item'>
                         <div className='buttons'>
-                            <button className='button is-primary' onClick={e => setModal(AuthScreen.CREATE_ACCOUNT)}>
+                            <button className='button is-primary' onClick={e => setModal('create-account')}>
                                 <strong>Sign up</strong>
                             </button>
-                            <button className='button is-light' onClick={e => setModal(AuthScreen.SIGN_IN)}>
+                            <button className='button is-light' onClick={e => setModal('sign-in')}>
                                 Log in
                             </button>
                         </div>
