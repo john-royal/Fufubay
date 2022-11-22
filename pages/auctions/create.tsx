@@ -3,7 +3,6 @@ import Router from 'next/router'
 import { useEffect, useState } from 'react'
 import AuthModal, { Screen } from '../../components/auth'
 import useForm from '../../lib/form'
-import { auctionURL } from '../../lib/url'
 import useUser from '../../lib/user'
 
 export default function CreateAuctionPage () {
@@ -13,7 +12,7 @@ export default function CreateAuctionPage () {
     title: '',
     description: ''
   }, async auction => {
-    await Router.push(auctionURL(auction))
+    await Router.push(`/auctions/${auction.id}/${auction.slug}`)
   })
 
   useEffect(() => {

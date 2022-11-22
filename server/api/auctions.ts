@@ -1,4 +1,4 @@
-import { Auction, Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import prisma from '../prisma'
 import router from './router'
 
@@ -19,22 +19,18 @@ export default router([
     method: 'post',
     path: '/',
     async handler (req, res) {
-      let auction = req.body as Auction
       if (req.user == null) {
         return res.unauthorized()
       }
-      auction = await prisma.auction.create({
-        data: {
-          title: auction.title,
-          description: auction.description,
-          slug: auction.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
-          seller: {
-            connect: {
-              id: req.user.id
-            }
-          }
+      const data: Prisma.AuctionCreateInput = {
+        title: req.body.title,
+        description: req.body.description,
+        slug: req.body.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+        seller: {
+          connect: { id: req.user.id }
         }
-      })
+      }
+      const auction = await prisma.auction.create({ data })
       return res.created(auction)
     }
   },

@@ -90,6 +90,33 @@ export default router([
     }
   },
   {
+    method: 'get',
+    path: '/:id/stripe',
+    async handler (req, res) {
+      const id = parseInt(req.params.id)
+      if (req.user == null || id !== req.user.id) {
+        return res.unauthorized()
+      }
+      const [customer, paymentMethods] = await Promise.all([
+        stripe.customers.retrieve(req.user.stripeCustomerID),
+        stripe.customers.listPaymentMethods(req.user.stripeCustomerID, { type: 'card' })
+      ])
+      return res.success({ user: req.user, customer, paymentMethods })
+    }
+  },
+  {
+    method: 'patch',
+    path: '/:id/stripe',
+    async handler (req, res) {
+      const id = parseInt(req.params.id)
+      if (req.user == null || id !== req.user.id) {
+        return res.unauthorized()
+      }
+      const customer = await stripe.customers.update(req.user.stripeCustomerID, req.body)
+      return res.success(customer)
+    }
+  },
+  {
     method: 'post',
     path: '/:id/setup-intents',
     async handler (req, res) {
@@ -97,13 +124,10 @@ export default router([
       if (req.user == null || id !== req.user.id) {
         return res.unauthorized()
       }
-      const [customer, setupIntent] = await Promise.all([
-        stripe.customers.retrieve(req.user.stripeCustomerID),
-        stripe.setupIntents.create({
-          customer: req.user.stripeCustomerID
-        })
-      ])
-      return res.success({ customer, setupIntent })
+      const setupIntent = await stripe.setupIntents.create({
+        customer: req.user.stripeCustomerID
+      })
+      return res.success({ setupIntent })
     }
   }
 ])
