@@ -23,7 +23,9 @@ export default router([
         email: normalizeEmail(req.body.email),
         password: await hash(req.body.password)
       }
-      const stripeCustomer = await stripe.customers.create()
+      const stripeCustomer = await stripe.customers.create({
+        email
+      })
       const user = await prisma.user.create({
         data: {
           username,

@@ -39,7 +39,7 @@ export default function SignInForm () {
           </div>
           <div className='field'>
             <div className='control'>
-              <button className={`button is-primary is-fullwidth ${working ? 'is-working' : ''}`}>Sign In</button>
+              <button className={`button is-primary is-fullwidth ${working ? 'is-loading' : ''}`}>Sign In</button>
             </div>
           </div>
           <div className='field'>

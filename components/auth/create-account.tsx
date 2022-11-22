@@ -45,7 +45,7 @@ export default function CreateAccountForm () {
           </div>
           <div className='field'>
             <div className='control'>
-              <button className={`button is-primary is-fullwidth ${working ? 'is-working' : ''}`}>Create Account</button>
+              <button className={`button is-primary is-fullwidth ${working ? 'is-loading' : ''}`}>Create Account</button>
             </div>
           </div>
         </form>

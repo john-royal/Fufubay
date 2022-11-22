@@ -1,5 +1,5 @@
 import { Auction, User } from '@prisma/client'
-import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
+import { GetServerSidePropsResult } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { get } from '../../../lib/request'
@@ -9,16 +9,13 @@ interface AuctionWithSeller extends Auction {
   seller: User
 }
 
-export async function getServerSideProps ({ params, req }: GetServerSidePropsContext): Promise<GetServerSidePropsResult<{ auction: AuctionWithSeller }>> {
-  if (typeof params?.id !== 'string' || typeof params?.slug !== 'string') {
+export async function getServerSideProps ({ params: { id, slug } }: { params: { id: string, slug: string } }): Promise<GetServerSidePropsResult<{ auction: AuctionWithSeller }>> {
+  const response = await get<AuctionWithSeller>(`/api/auctions/${id}`)
+  if (!response.success) {
     return { notFound: true }
   }
-  const res = await get<AuctionWithSeller>(`/api/auctions/${params.id}`)
-  if (!res.success) {
-    return { notFound: true }
-  }
-  const auction = res.data
-  if (auction.slug !== params.slug) {
+  const auction = response.data
+  if (slug !== auction.slug) {
     return {
       redirect: {
         destination: auctionURL(auction),
