@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export default function AuctionItem ({ auction }: { auction: Auction }) {
   const linkProps = {
-    href: '/auctions/[id]/slug',
+    href: '/auctions/[id]/[slug]',
     as: `/auctions/${auction.id}/${auction.slug}`
   }
   return (
