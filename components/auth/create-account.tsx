@@ -28,7 +28,7 @@ export default function CreateAccountForm ({ setScreen }: { setScreen: SetScreen
         <TextField title='Username' type='text' {...register('username')} />
         <TextField title='Email Address' type='email' {...register('email')} />
         <TextField title='Password' type='password' {...register('password')} />
-        <Button title='Create Account' />
+        <Button title='Create Account' className='is-fullwidth' />
       </Form>
     </>
   )

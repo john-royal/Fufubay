@@ -25,7 +25,7 @@ export default function SignInForm ({ setScreen }: { setScreen: SetScreen }) {
       <Form onSubmit={submit}>
         <TextField title='Email Address' type='email' {...register('email')} />
         <TextField title='Password' type='password' {...register('password')} />
-        <Button title='Create Account' />
+        <Button title='Sign In' className='is-fullwidth' />
       </Form>
     </>
   )
