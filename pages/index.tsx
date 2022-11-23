@@ -1,5 +1,6 @@
 import { Auction } from '@prisma/client'
 import AuctionItem from '../components/auction-item'
+import Categories from '../components/categories'
 import { get } from '../lib/request'
 
 export async function getServerSideProps () {
@@ -14,6 +15,7 @@ export async function getServerSideProps () {
 export default function Home ({ auctions }: { auctions: Auction[] }) {
   return (
     <main className='container m-5'>
+      <Categories />
       {auctions.map(auction =>
         <AuctionItem key={auction.id} auction={auction} />
       )}
