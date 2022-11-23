@@ -33,7 +33,7 @@ export default function AuctionPage ({ auction }: { auction: AuctionWithSeller }
       <Image src={auction.image} alt={auction.title} width={680} height={540} />
       <h1 className='title'>{auction.title}</h1>
         <p>{auction.description}</p>
-        <p>Sold by <Link href='/users/[id]/slug' as={`/users/${auction.seller.id}/${auction.seller.username}`} style={{ fontWeight: 'bold' }}>{auction.seller.username}</Link></p>
+        <p>Sold by <Link href='/users/[id]/[slug]' as={`/users/${auction.seller.id}/${auction.seller.username}`} style={{ fontWeight: 'bold' }}>{auction.seller.username}</Link></p>
     </div>
   )
 }
