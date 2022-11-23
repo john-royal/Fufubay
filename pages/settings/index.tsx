@@ -1,6 +1,5 @@
 import { User } from '@prisma/client'
-import { GetServerSidePropsContext } from 'next'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, Fragment, useContext, useEffect, useState } from 'react'
 import Stripe from 'stripe'
 import useSWR from 'swr'
 import UserHeader from '../../components/user-header'
@@ -33,15 +32,6 @@ const ModalContext = createContext<ModalStateType>([null, () => {}])
 interface SectionOptions {
   title: string
   items: { [item in Item]?: string | null | undefined }
-}
-
-export async function getServerSideProps ({ req: { headers: { cookie } } }: GetServerSidePropsContext) {
-  const { customer, paymentMethods } = await request<Props>({
-    method: 'GET',
-    url: `http://localhost:8080/api/users/${1}/stripe`,
-    headers: { Cookie: cookie }
-  })
-  return { props: { customer, paymentMethods } }
 }
 
 export default function SettingsPage () {
@@ -106,10 +96,10 @@ function SettingsPageBody ({ user, customer, paymentMethods }: Props) {
             <button className='button is-small' onClick={() => setItem(Item.PROFILE)}>Edit Profile</button>
         </UserHeader>
         {sections.map(({ title, items }) => (
-            <>
+            <div key={title}>
                 <hr />
-                <Section key={title} title={title} items={items} />
-            </>
+                <Section title={title} items={items} />
+            </div>
         ))}
     </div>
   )
@@ -133,7 +123,7 @@ function Section ({ title, items }: SectionOptions) {
   )
 
   return (
-    <section>
+    <section className='m-5'>
         <h2 className='title is-4'>{title}</h2>
         {Object.entries(items).map(([item, value]) => (
             <ItemRow key={item} item={item as Item} value={value} />

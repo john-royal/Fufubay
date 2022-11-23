@@ -1,12 +1,10 @@
-import { createContext, FormEvent, PropsWithChildren, useContext, useState } from 'react'
+import { createContext, FormEvent, HTMLInputTypeAttribute, InputHTMLAttributes, PropsWithChildren, useContext, useState } from 'react'
 
 const ButtonContext = createContext(false)
 
-export interface FormProps extends PropsWithChildren {
-  onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>
-}
-
-export function Form ({ children, onSubmit }: FormProps) {
+export function Form ({ children, onSubmit }: PropsWithChildren & {
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void | Promise<void>
+}) {
   const [working, setWorking] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -14,7 +12,7 @@ export function Form ({ children, onSubmit }: FormProps) {
     if (error == null) return <></>
     return (
         <div className='notification is-danger'>
-            <strong>{error}</strong> Please try again.
+            <strong>{error.toString()}</strong> Please try again.
         </div>
     )
   }
@@ -24,13 +22,15 @@ export function Form ({ children, onSubmit }: FormProps) {
 
     setWorking(true)
 
-    onSubmit(event)
-      .catch(error => setError(error.toString()))
+    ;(async () => {
+      await onSubmit(event)
+    })()
+      .catch(error => setError(error))
       .finally(() => setWorking(false))
   }
 
   return (
-    <div className="form">
+    <div className='form'>
         <ErrorNotification />
         <form onSubmit={handleSubmit}>
         <ButtonContext.Provider value={working}>
@@ -41,12 +41,41 @@ export function Form ({ children, onSubmit }: FormProps) {
   )
 }
 
+export function TextField (props: InputHTMLAttributes<HTMLInputElement> & {
+  title: string
+  name: string
+  type: HTMLInputTypeAttribute
+}) {
+  const working = useContext(ButtonContext)
+
+  return (
+    <Field title={props.title} id={props.name}>
+        <input className='input' {...props} placeholder={props.placeholder ?? props.title} disabled={props.disabled ?? working}/>
+    </Field>
+  )
+}
+
+export function Field ({ title, id, children }: { title: string, id: string } & PropsWithChildren) {
+  return (
+    <div className='field'>
+        <label htmlFor={id} className='label'>{title}</label>
+        <div className='control'>
+            {children}
+        </div>
+    </div>
+  )
+}
+
 export function Button ({ title, className }: { title: string, className?: string }) {
   const working = useContext(ButtonContext)
 
   return (
-    <button className={`button is-primary ${working ? 'is-loading' : ''} ${className ?? ''}`}>
-        {title}
-    </button>
+    <div className='field'>
+        <div className='control'>
+            <button className={`button is-primary ${working ? 'is-loading' : ''} ${className ?? ''}`} disabled={working}>
+                {title}
+            </button>
+        </div>
+    </div>
   )
 }

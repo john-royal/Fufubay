@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Form } from '../../components/form'
+import { Button, Form, TextField } from '../../components/form'
 import Modal, { ModalProps } from '../../components/modal'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
@@ -28,18 +28,8 @@ export default function PasswordModal ({ isActive, handleClose }: ModalProps) {
         <h1 className='title'>Password</h1>
 
         <Form onSubmit={handleSubmit}>
-            <div className='field'>
-                <label htmlFor='password' className='label'>Password</label>
-                <div className='control'>
-                    <input type='password' name='password' className='input' placeholder='Password' value={password} onChange={e => setPassword(e.target.value)} required />
-                </div>
-            </div>
-            <div className='field'>
-                <label htmlFor='confirm-password' className='label'>Confirm Password</label>
-                <div className='control'>
-                    <input type='password' name='confirm-password' className='input' placeholder='Confirm Password' value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
-                </div>
-            </div>
+            <TextField title='Password' name='password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
+            <TextField title='Confirm Password' name='confirm-password' type='password' value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
             <Button title='Save' className='mt-4' />
         </Form>
     </Modal>

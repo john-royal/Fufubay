@@ -33,8 +33,8 @@ export default function AddressModal ({ isActive, handleClose }: ModalProps) {
 
       <Form onSubmit={handleSubmit}>
         <StripeContext>
-        <AddressElement options={{ mode: 'shipping' }} onChange={e => setAddress(e.value.address)} />
-        <Button title='Save' className='mt-4' />
+          <AddressElement options={{ mode: 'shipping' }} onChange={e => setAddress(e.value.address)} onEscape={() => handleClose()} />
+          <Button title='Save' className='mt-4' />
         </StripeContext>
       </Form>
     </Modal>

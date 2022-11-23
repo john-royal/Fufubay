@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Form } from '../../components/form'
+import { Button, Form, TextField } from '../../components/form'
 import Modal, { ModalProps } from '../../components/modal'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
@@ -25,18 +25,8 @@ export default function ProfileModal ({ isActive, handleClose }: ModalProps) {
         <h1 className='title'>Profile</h1>
 
         <Form onSubmit={handleSubmit}>
-            <div className='field'>
-                <label htmlFor='bio' className='label'>Bio</label>
-                <div className='control'>
-                    <input type='text' name='bio' className='input' placeholder='Bio' value={bio} onChange={e => setBio(e.target.value)} />
-                </div>
-            </div>
-            <div className='field'>
-                <label htmlFor='image' className='label'>Image URL</label>
-                <div className='control'>
-                    <input type='text' name='image' className='input' placeholder='Image URL' value={image} onChange={e => setImage(e.target.value)} />
-                </div>
-            </div>
+            <TextField title='Bio' name='bio' type='text' value={bio} onChange={e => setBio(e.target.value)} />
+            <TextField title='Image URL' name='image' type='url' value={image} onChange={e => setImage(e.target.value)} />
             <Button title='Save' className='mt-4' />
         </Form>
     </Modal>

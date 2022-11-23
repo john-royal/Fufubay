@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Form } from '../../components/form'
+import { Button, Form, TextField } from '../../components/form'
 import Modal, { ModalProps } from '../../components/modal'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
@@ -24,12 +24,7 @@ export default function EmailModal ({ isActive, handleClose }: ModalProps) {
       <h1 className='title'>Email Address</h1>
 
       <Form onSubmit={handleSubmit}>
-        <div className='field'>
-          <label htmlFor='email' className='label'>Email</label>
-          <div className='control'>
-              <input type='email' name='Email' className='input' placeholder='Email' value={email} onChange={e => setEmail(e.target.value)} required />
-          </div>
-        </div>
+        <TextField title='Email' name='email' type='email' value={email} onChange={e => setEmail(e.target.value)} />
         <Button title='Save' className='mt-4' />
       </Form>
     </Modal>

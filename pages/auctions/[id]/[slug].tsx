@@ -9,7 +9,7 @@ interface AuctionWithSeller extends Auction {
 }
 
 export async function getServerSideProps ({ params: { id, slug } }: { params: { id: string, slug: string } }): Promise<GetServerSidePropsResult<{ auction: AuctionWithSeller }>> {
-  const response = await get<AuctionWithSeller>(`/api/auctions/${id}`)
+  const response = await get<AuctionWithSeller>(`http://localhost:8080/api/auctions/${id}`)
   if (!response.success) {
     return { notFound: true }
   }

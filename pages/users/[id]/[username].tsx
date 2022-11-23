@@ -6,8 +6,8 @@ import { get } from '../../../lib/request'
 
 export async function getServerSideProps ({ params: { id, username } }: { params: { id: string, username: string } }): Promise<GetServerSidePropsResult<{ user: User, auctions: Auction[] }>> {
   const responses = await Promise.all([
-    get<User>(`/api/users/${id}`),
-    get<Auction[]>(`/api/auctions?sellerID=${id}`)
+    get<User>(`http://localhost:8080/api/users/${id}`),
+    get<Auction[]>(`http://localhost:8080/api/auctions?sellerID=${id}`)
   ])
   if (!responses[0].success || !responses[1].success) {
     return {

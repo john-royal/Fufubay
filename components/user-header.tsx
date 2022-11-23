@@ -10,7 +10,7 @@ export default function UserHeader ({ username, image, bio, createdAt, children 
   const joinMonthYear = new Date(createdAt).toLocaleDateString('en-us', { month: 'long', year: 'numeric' })
 
   return (
-    <header>
+    <header className='m-5'>
         <div className='level'>
             <div className='level-left'>
                 <div className='level-item'>

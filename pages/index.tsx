@@ -1,10 +1,9 @@
 import { Auction } from '@prisma/client'
-import { GetServerSidePropsContext } from 'next'
 import AuctionItem from '../components/auction-item'
 import { get } from '../lib/request'
 
-export async function getServerSideProps ({ req }: GetServerSidePropsContext) {
-  const response = await get<Auction[]>('/api/auctions')
+export async function getServerSideProps () {
+  const response = await get<Auction[]>('http://localhost:8080/api/auctions')
   return {
     props: {
       auctions: response.success ? response.data : []
