@@ -1,19 +1,24 @@
-import { Auction, User } from '@prisma/client'
+import { Auction, Bid, User } from '@prisma/client'
 import { GetServerSidePropsResult } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { get } from '../../../lib/request'
+import { useState } from 'react'
+import request from '../../../lib/request'
+import BidModal from './_bid'
 
-interface AuctionWithSeller extends Auction {
+interface SellerAuction extends Auction {
   seller: User
 }
 
-export async function getServerSideProps ({ params: { id, slug } }: { params: { id: string, slug: string } }): Promise<GetServerSidePropsResult<{ auction: AuctionWithSeller }>> {
-  const response = await get<AuctionWithSeller>(`http://localhost:8080/api/auctions/${id}`)
-  if (!response.success) {
-    return { notFound: true }
-  }
-  const auction = response.data
+interface UserBid extends Bid {
+  user: User
+}
+
+export async function getServerSideProps ({ params: { id, slug } }: { params: { id: string, slug: string } }): Promise<GetServerSidePropsResult<{ auction: SellerAuction, bids: UserBid[] }>> {
+  const [auction, bids] = await Promise.all([
+    request<SellerAuction>({ method: 'GET', url: `http://localhost:8080/api/auctions/${id}` }),
+    request<UserBid[]>({ method: 'GET', url: `http://localhost:8080/api/bids?auctionID=${id}&include=user` })
+  ])
   if (slug !== auction.slug) {
     return {
       redirect: {
@@ -23,17 +28,56 @@ export async function getServerSideProps ({ params: { id, slug } }: { params: { 
     }
   }
   return {
-    props: { auction }
+    props: { auction, bids }
   }
 }
 
-export default function AuctionPage ({ auction }: { auction: AuctionWithSeller }) {
+export default function AuctionPage ({ auction, bids }: { auction: SellerAuction, bids: UserBid[] }) {
+  const [active, setActive] = useState(false)
+
   return (
     <div className='container mt-5'>
       <Image src={auction.image} alt={auction.title} width={680} height={540} />
       <h1 className='title'>{auction.title}</h1>
-        <p>{auction.description}</p>
-        <p>Sold by <Link href='/users/[id]/[slug]' as={`/users/${auction.seller.id}/${auction.seller.username}`} style={{ fontWeight: 'bold' }}>{auction.seller.username}</Link></p>
+      <p>{auction.description}</p>
+      <p>Sold by <Link href='/users/[id]/[slug]' as={`/users/${auction.seller.id}/${auction.seller.username}`} style={{ fontWeight: 'bold' }}>{auction.seller.username}</Link></p>
+      <hr />
+      <h2 className='title'>Bids</h2>
+      <button className='button is-primary' onClick={() => setActive(true)}>Bid</button>
+      <ul className='list'>
+        {bids.map(bid => (
+          <BidItem bid={bid} key={bid.id} />
+        ))}
+      </ul>
+      <BidModal isActive={active} handleClose={() => setActive(false)} auctionID={auction.id} />
     </div>
   )
+}
+
+function BidItem ({ bid }: { bid: UserBid }) {
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+
+    // These options are needed to round to whole numbers if that's what you want.
+    // minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
+    // maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+  })
+
+  return (<article className='media'>
+  <figure className='media-left'>
+    <p className='image is-64x64'>
+      <Image src={bid.user.image} alt={bid.user.username} width={64} height={64} className='is-rounded' />
+    </p>
+  </figure>
+  <div className='media-content'>
+    <div className='content'>
+      <p>
+        <strong>{bid.user.username}</strong> <small>{new Date(bid.date).toLocaleDateString()}</small>
+        <br />
+        Bid {formatter.format(bid.amount)}
+      </p>
+    </div>
+  </div>
+</article>)
 }
