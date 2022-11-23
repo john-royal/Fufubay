@@ -1,3 +1,4 @@
+import { User } from '@prisma/client'
 import { AddressElement } from '@stripe/react-stripe-js'
 import { useState } from 'react'
 import Stripe from 'stripe'
@@ -8,7 +9,7 @@ import request from '../../lib/request'
 import useUser from '../../lib/user'
 
 export default function AddressModal ({ isActive, handleClose }: ModalProps) {
-  const [user] = useUser()
+  const { user } = useUser() as { user: User }
   const [address, setAddress] = useState<Stripe.Address>({
     line1: '',
     line2: null,
@@ -19,7 +20,6 @@ export default function AddressModal ({ isActive, handleClose }: ModalProps) {
   })
 
   const handleSubmit = async () => {
-    if (user == null) return
     await request({
       method: 'PATCH',
       url: `/api/users/${user.id}/stripe`,

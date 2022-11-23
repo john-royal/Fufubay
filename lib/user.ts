@@ -1,10 +1,34 @@
 import { User } from '@prisma/client'
-import { createContext, useContext } from 'react'
+import Router from 'next/router'
+import { useEffect } from 'react'
+import useSWR, { KeyedMutator } from 'swr'
+import request from './request'
 
-type UserState = [User | null, (user: User | null) => void]
+export default function useUser (options: RedirectOptions = { redirect: 'unauthenticated', to: '/' }): { user: User | undefined, setUser: KeyedMutator<User> } {
+  const { data: user, mutate: setUser } = useSWR<User>('/api/users/me', async url => {
+    return await request({ method: 'GET', url })
+  })
 
-export const AuthContext = createContext<UserState>([null, user => {}])
+  useEffect(() => {
+    if (options.redirect === false) return
 
-export default function useUser (): UserState {
-  return useContext(AuthContext)
+    if (user == null && options.redirect === 'unauthenticated') {
+      void Router.push(`${options.to}?redirect=${Router.asPath}`)
+    } else if (user != null && options.redirect === 'authenticated') {
+      void Router.push(options.to)
+    }
+  }, [user, options])
+
+  return { user, setUser }
 }
+
+export interface DisableRedirectOptions {
+  redirect: false
+}
+
+export interface EnableRedirectOptions {
+  redirect: 'authenticated' | 'unauthenticated'
+  to: string
+}
+
+export type RedirectOptions = DisableRedirectOptions | EnableRedirectOptions

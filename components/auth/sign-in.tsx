@@ -3,9 +3,10 @@ import useForm from '../../lib/form'
 import useUser from '../../lib/user'
 import { SetScreen } from '.'
 import { Form, TextField, Button } from '../form'
+import Router from 'next/router'
 
 export default function SignInForm ({ setScreen }: { setScreen: SetScreen }) {
-  const [, setUser] = useUser()
+  const { setUser } = useUser({ redirect: false })
   const { register, submit } = useForm<User>({
     method: 'POST',
     url: '/api/auth/sign-in'
@@ -13,7 +14,8 @@ export default function SignInForm ({ setScreen }: { setScreen: SetScreen }) {
     email: '',
     password: ''
   }, async user => {
-    setUser(user)
+    await setUser(user)
+    await Router.push(Router.query.redirect as string ?? '/settings')
     setScreen(null)
   })
 

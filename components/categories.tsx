@@ -1,5 +1,5 @@
-const Categories = () => {
-    return (
+export default function Categories () {
+  return (
      <div className="ccontainer.is-max-desktop box">
         <div className="field-group">
        <div className="field is-inline-block-desktop mr-auto">
@@ -54,7 +54,5 @@ const Categories = () => {
 </div>
 </div>
      </div>
-    );
+  )
 }
-
-export default Categories;

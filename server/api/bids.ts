@@ -35,7 +35,7 @@ export default router([
     method: 'post',
     path: '/',
     async handler (req, res) {
-      if (req.user == null) {
+      if (req.session.user == null) {
         return res.unauthorized()
       }
       const data: Prisma.BidCreateInput = {
@@ -47,7 +47,7 @@ export default router([
         },
         user: {
           connect: {
-            id: req.user.id
+            id: req.session.user.id
           }
         }
       }

@@ -1,17 +1,17 @@
 import express from 'express'
-import cookieParser from 'cookie-parser'
+import { ironSession } from 'iron-session/express'
 import auctions from './auctions'
 import auth from './auth'
-import helpers from '../middleware/helpers'
-import jwt from '../middleware/jwt'
+import helpers from '../helpers'
 import users from './users'
 import bids from './bids'
+import { sessionOptions } from '../../shared/session'
 
 const api = express.Router()
+const session = ironSession(sessionOptions)
 
 api.use(express.json())
-api.use(cookieParser())
-api.use(jwt({ secret: process.env.JWT_SECRET ?? '' }))
+api.use(session) // eslint-disable-line @typescript-eslint/no-misused-promises
 api.use(helpers)
 api.use('/auctions', auctions)
 api.use('/auth', auth)

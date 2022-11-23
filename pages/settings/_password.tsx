@@ -1,3 +1,4 @@
+import { User } from '@prisma/client'
 import { useState } from 'react'
 import { Button, Form, TextField } from '../../components/form'
 import Modal, { ModalProps } from '../../components/modal'
@@ -5,12 +6,11 @@ import request from '../../lib/request'
 import useUser from '../../lib/user'
 
 export default function PasswordModal ({ isActive, handleClose }: ModalProps) {
-  const [user] = useUser()
+  const { user } = useUser() as { user: User }
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const handleSubmit = async () => {
-    if (user == null) return
     if (password !== confirmPassword) {
       throw new Error('Passwords do not match.')
     }

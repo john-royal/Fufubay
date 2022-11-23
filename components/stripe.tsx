@@ -1,3 +1,4 @@
+import { User } from '@prisma/client'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { PropsWithChildren, useEffect, useState } from 'react'
@@ -17,11 +18,11 @@ async function loadSetupIntent (userID: number): Promise<Stripe.SetupIntent> {
 }
 
 export default function StripeContext ({ children }: PropsWithChildren) {
-  const [user] = useUser()
+  const { user } = useUser() as { user: User }
   const [clientSecret, setClientSecret] = useState<string | null>()
 
   useEffect(() => {
-    if (user == null || clientSecret != null) return
+    if (clientSecret != null) return
 
     loadSetupIntent(user.id)
       .then(setupIntent => setClientSecret(setupIntent.client_secret))

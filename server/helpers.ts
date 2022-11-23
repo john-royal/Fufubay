@@ -1,6 +1,16 @@
+import { User } from '@prisma/client'
 import { Request, Response, NextFunction } from 'express'
 
 export default function helpers (req: Request, res: Response, next: NextFunction): void {
+  Object.assign(req, {
+    async signIn (user: User) {
+      req.session.user = user
+      await req.session.save()
+    },
+    async signOut () {
+      req.session.destroy()
+    }
+  })
   Object.assign(res, {
     success<T>(data: T) {
       return res.status(200).json({

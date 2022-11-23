@@ -1,4 +1,4 @@
-import { useRouter } from 'next/router'
+import Router from 'next/router'
 import React from 'react'
 import Modal from '../modal'
 import CreateAccountForm from './create-account'
@@ -10,11 +10,13 @@ export type SetScreen = (screen: Screen) => void
 
 export type StateHandler = [Screen, (state: Screen) => void]
 
-export default function AuthModal ({ required, state }: { required: boolean, state: StateHandler }) {
+export default function AuthModal ({ state }: { state: StateHandler }) {
   const [screen, setScreen] = state
-  const router = useRouter()
 
-  const handleClose = () => required ? router.back() : setScreen(null)
+  const handleClose = () => {
+    void Router.replace(Router.basePath)
+    setScreen(null)
+  }
 
   const Body = () => {
     switch (screen) {

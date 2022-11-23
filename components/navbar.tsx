@@ -1,21 +1,33 @@
 import Link from 'next/link'
-import { useState } from 'react'
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
 import { get } from '../lib/request'
 import useUser from '../lib/user'
 import AuthModal, { Screen } from './auth'
 
 export default function Navbar (pagePropsForDebug: any) {
+  const router = useRouter()
   const [modal, setModal] = useState<Screen | null>(null)
-  const [user, setUser] = useUser()
   const [showMenu, setShowMenu] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+  const { user, setUser } = useUser({ redirect: false })
 
   const signOut = () => {
+    setSigningOut(true)
+
     get('/api/auth/sign-out')
       .then(async () => {
-        setUser(null)
+        await setUser(undefined)
       })
       .catch(err => alert(err))
+      .finally(() => setSigningOut(false))
   }
+
+  useEffect(() => {
+    if (user == null && router.query.redirect != null) {
+      setModal('sign-in')
+    }
+  }, [user, router.query])
 
   return (
     <div className='navbar' role='navigation' aria-label='main navigation'>
@@ -58,7 +70,7 @@ export default function Navbar (pagePropsForDebug: any) {
                     <div className='navbar-item'>
                         <div className='level'>
                             <span className='level-item mr-3'>Hi,&nbsp;<Link href='/settings' className='has-text-weight-bold'>{user.username}</Link></span>
-                            <button className='button is-light level-item' onClick={signOut}>
+                            <button className={`button is-light level-item ${signingOut ? 'is-loading' : ''}`} onClick={signOut}>
                                 Sign Out
                             </button>
                         </div>
@@ -78,7 +90,7 @@ export default function Navbar (pagePropsForDebug: any) {
                   </>}
             </div>
         </div>
-        <AuthModal required={false} state={[modal, setModal]} />
+        <AuthModal state={[modal, setModal]} />
     </div>
   )
 }

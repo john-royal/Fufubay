@@ -42,7 +42,10 @@ export default router([
     method: 'get',
     path: '/:id',
     async handler (req, res) {
-      const id = parseInt(req.params.id)
+      const id = req.params.id === 'me' ? req.session.user?.id : parseInt(req.params.id)
+      if (id == null) {
+        return res.badRequest()
+      }
       const user = await prisma.user.findUnique({
         where: { id }
       })
@@ -57,7 +60,7 @@ export default router([
     path: '/:id',
     async handler (req, res) {
       const id = parseInt(req.params.id)
-      if (req.user == null || id !== req.user.id) {
+      if (req.session.user == null || id !== req.session.user.id) {
         return res.unauthorized()
       }
       if (typeof req.body.password === 'string') {
@@ -76,7 +79,7 @@ export default router([
     path: '/:id',
     async handler (req, res) {
       const id = parseInt(req.params.id)
-      if (req.user == null || id !== req.user.id) {
+      if (req.session.user == null || id !== req.session.user.id) {
         return res.unauthorized()
       }
       const user = await prisma.user.findUniqueOrThrow({
@@ -94,14 +97,14 @@ export default router([
     path: '/:id/stripe',
     async handler (req, res) {
       const id = parseInt(req.params.id)
-      if (req.user == null || id !== req.user.id) {
+      if (req.session.user == null || id !== req.session.user.id) {
         return res.unauthorized()
       }
       const [customer, paymentMethods] = await Promise.all([
-        stripe.customers.retrieve(req.user.stripeCustomerID),
-        stripe.customers.listPaymentMethods(req.user.stripeCustomerID, { type: 'card' })
+        stripe.customers.retrieve(req.session.user.stripeCustomerID),
+        stripe.customers.listPaymentMethods(req.session.user.stripeCustomerID, { type: 'card' })
       ])
-      return res.success({ user: req.user, customer, paymentMethods })
+      return res.success({ user: req.session.user, customer, paymentMethods })
     }
   },
   {
@@ -109,10 +112,10 @@ export default router([
     path: '/:id/stripe',
     async handler (req, res) {
       const id = parseInt(req.params.id)
-      if (req.user == null || id !== req.user.id) {
+      if (req.session.user == null || id !== req.session.user.id) {
         return res.unauthorized()
       }
-      const customer = await stripe.customers.update(req.user.stripeCustomerID, req.body)
+      const customer = await stripe.customers.update(req.session.user.stripeCustomerID, req.body)
       return res.success(customer)
     }
   },
@@ -121,11 +124,11 @@ export default router([
     path: '/:id/setup-intents',
     async handler (req, res) {
       const id = parseInt(req.params.id)
-      if (req.user == null || id !== req.user.id) {
+      if (req.session.user == null || id !== req.session.user.id) {
         return res.unauthorized()
       }
       const setupIntent = await stripe.setupIntents.create({
-        customer: req.user.stripeCustomerID
+        customer: req.session.user.stripeCustomerID
       })
       return res.success({ setupIntent })
     }

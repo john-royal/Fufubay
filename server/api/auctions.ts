@@ -19,7 +19,7 @@ export default router([
     method: 'post',
     path: '/',
     async handler (req, res) {
-      if (req.user == null) {
+      if (req.session.user == null) {
         return res.unauthorized()
       }
       const data: Prisma.AuctionCreateInput = {
@@ -27,7 +27,7 @@ export default router([
         description: req.body.description,
         slug: req.body.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
         seller: {
-          connect: { id: req.user.id }
+          connect: { id: req.session.user.id }
         }
       }
       const auction = await prisma.auction.create({ data })
@@ -57,7 +57,7 @@ export default router([
         where: { id: parseInt(req.params.id) },
         include: { seller: true }
       })
-      if (req.user == null || auction.sellerID !== req.user.id) {
+      if (req.session.user == null || auction.sellerID !== req.session.user.id) {
         return res.unauthorized()
       }
       await prisma.auction.update({
@@ -74,7 +74,7 @@ export default router([
       const auction = await prisma.auction.findUniqueOrThrow({
         where: { id: parseInt(req.params.id) }
       })
-      if (req.user == null || auction.sellerID !== req.user.id) {
+      if (req.session.user == null || auction.sellerID !== req.session.user.id) {
         return res.unauthorized()
       }
       await prisma.auction.delete({ where: { id: auction.id } })

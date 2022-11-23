@@ -3,9 +3,10 @@ import useForm from '../../lib/form'
 import useUser from '../../lib/user'
 import { SetScreen } from '.'
 import { Button, Form, TextField } from '../form'
+import Router from 'next/router'
 
 export default function CreateAccountForm ({ setScreen }: { setScreen: SetScreen }) {
-  const [, setUser] = useUser()
+  const { setUser } = useUser({ redirect: false })
 
   const { register, submit } = useForm<User>({
     method: 'POST',
@@ -15,7 +16,8 @@ export default function CreateAccountForm ({ setScreen }: { setScreen: SetScreen
     email: '',
     password: ''
   }, async user => {
-    setUser(user)
+    await setUser(user)
+    await Router.push(Router.query.redirect as string ?? '/settings')
     setScreen(null)
   })
 

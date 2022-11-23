@@ -1,14 +1,13 @@
 import { Auction } from '@prisma/client'
+import { withIronSessionSsr } from 'iron-session/next'
 import Router from 'next/router'
-import { useEffect, useState } from 'react'
-import AuthModal, { Screen } from '../../components/auth'
 import { Button, Form, TextField } from '../../components/form'
 import useForm from '../../lib/form'
 import useUser from '../../lib/user'
+import { sessionOptions } from '../../shared/session'
 
 export default function CreateAuctionPage () {
-  const [user] = useUser()
-  const [modal, setModal] = useState<Screen>(null)
+  useUser()
   const { register, submit } = useForm<Auction>({
     method: 'POST',
     url: '/api/auctions'
@@ -19,14 +18,8 @@ export default function CreateAuctionPage () {
     await Router.push(`/auctions/${auction.id}/${auction.slug}`)
   })
 
-  useEffect(() => {
-    if (user == null) setModal('sign-in')
-  }, [user])
-
   return (
     <div className="container mt-5">
-      <AuthModal required={true} state={[modal, setModal]} />
-
       <h1 className='title'>New Auction</h1>
 
       <Form onSubmit={submit}>
@@ -37,3 +30,12 @@ export default function CreateAuctionPage () {
     </div>
   )
 }
+export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
+  if (req.session.user == null) {
+    return {
+      redirect: { destination: '/?redirect=/auctions/create', permanent: false }
+    }
+  } else {
+    return { props: {} }
+  }
+}, sessionOptions)

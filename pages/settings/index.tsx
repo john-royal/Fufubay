@@ -1,10 +1,12 @@
 import { User } from '@prisma/client'
+import { withIronSessionSsr } from 'iron-session/next'
 import { createContext, Fragment, useContext, useEffect, useState } from 'react'
 import Stripe from 'stripe'
 import useSWR from 'swr'
 import UserHeader from '../../components/user-header'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
+import { sessionOptions } from '../../shared/session'
 import AddressModal from './_address'
 import EmailModal from './_email'
 import PasswordModal from './_password'
@@ -34,9 +36,19 @@ interface SectionOptions {
   items: { [item in Item]?: string | null | undefined }
 }
 
+export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
+  if (req.session.user == null) {
+    return {
+      redirect: { destination: '/?redirect=/settings', permanent: false }
+    }
+  } else {
+    return { props: {} }
+  }
+}, sessionOptions)
+
 export default function SettingsPage () {
-  const id = useUser()[0]?.id as number
-  const { data, mutate } = useSWR<Props>(`/api/users/${id}/stripe`, async url => {
+  const { user } = useUser()
+  const { data, mutate } = useSWR<Props>(`/api/users/${user?.id as number}/stripe`, async url => {
     return await request({
       method: 'GET',
       url
