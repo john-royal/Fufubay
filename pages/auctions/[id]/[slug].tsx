@@ -36,20 +36,33 @@ export default function AuctionPage ({ auction, bids }: { auction: SellerAuction
   const [active, setActive] = useState(false)
 
   return (
-    <div className='container mt-5'>
+    <div className='container mt-5 columns level is-centered is-variable is-1-mobile is-0-tablet is-3-desktop is-8-widescreen is-2-fullhd'>
+      <div className='column is-one-fifth'></div>
+      <div className='column is-half'>
       <Image src={auction.image} alt={auction.title} width={680} height={540} />
       <h1 className='title'>{auction.title}</h1>
       <p>{auction.description}</p>
       <p>Sold by <Link href='/users/[id]/[slug]' as={`/users/${auction.seller.id}/${auction.seller.username}`} style={{ fontWeight: 'bold' }}>{auction.seller.username}</Link></p>
       <hr />
-      <h2 className='title'>Bids</h2>
-      <button className='button is-primary' onClick={() => setActive(true)}>Bid</button>
+      </div>
+      <div className='column is-half container box'>
+      <h2 className='title'>Bid Information</h2>
+      <div className='rows'>
+        <div className='row'>
       <ul className='list'>
         {bids.map(bid => (
           <BidItem bid={bid} key={bid.id} />
         ))}
       </ul>
+      </div>
+      <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/>
+      <div className='container box-link-hover-shadow'>
+      <br/>
+      <button className='button is-primary button is-normal is-fullwidth' onClick={() => setActive(true)}>Bid</button>
       <BidModal isActive={active} handleClose={() => setActive(false)} auctionID={auction.id} />
+      </div>
+      </div>
+      </div>
     </div>
   )
 }
