@@ -16,6 +16,7 @@ export default function Home ({ auctions }: { auctions: Auction[] }) {
   return (
     <main className='container m-5'>
       <Categories />
+      <br/>
       {auctions.map(auction =>
         <AuctionItem key={auction.id} auction={auction} />
       )}

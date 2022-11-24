@@ -2,6 +2,7 @@ import 'bulma'
 import { AppProps } from 'next/app'
 import Head from 'next/head'
 import Navbar from '../components/navbar'
+import Search from '../components/search'
 
 export default function FufubayApp ({ Component, pageProps }: AppProps) {
   return (
@@ -12,6 +13,7 @@ export default function FufubayApp ({ Component, pageProps }: AppProps) {
         <link rel='icon' href='/favicon.ico' />
       </Head>
       <Navbar {...pageProps} />
+      <Search />
       <Component {...pageProps} />
     </>
   )
