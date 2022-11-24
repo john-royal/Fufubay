@@ -1,8 +1,8 @@
 export default function Categories () {
   return (
-     <div className="ccontainer.is-max-desktop box">
-        <div className="field-group">
-       <div className="field is-inline-block-desktop mr-auto">
+     <div className="container box container is-max-widescreen">
+        <div className="columns">
+       <div className="column is-6">
   <p className="control has-icons-left">
     <span className="select">
       <select>
@@ -18,7 +18,7 @@ export default function Categories () {
     </span>
   </p>
 </div>
-<div className="field is-inline-block-desktop mr-0 pt-3">
+<div className="column is-3">
   <p className="control has-icons-left">
     <span className="select">
       <select>
@@ -37,7 +37,7 @@ export default function Categories () {
     </span>
   </p>
 </div>
-<div className="field is-inline-block-desktop mr-10">
+<div className="column">
   <p className="control has-icons-left">
     <span className="select">
       <select>
@@ -51,8 +51,8 @@ export default function Categories () {
       <i className="fas fa-globe"></i>
     </span>
   </p>
+  </div>
 </div>
 </div>
-     </div>
   )
 }
