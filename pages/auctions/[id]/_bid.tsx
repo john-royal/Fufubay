@@ -1,3 +1,4 @@
+import Router from 'next/router'
 import { useState } from 'react'
 import { Button, Form, TextField } from '../../../components/form'
 import Modal, { ModalProps } from '../../../components/modal'
@@ -5,7 +6,7 @@ import request from '../../../lib/request'
 import useUser from '../../../lib/user'
 
 export default function BidModal ({ auctionID, isActive, handleClose }: { auctionID: number } & ModalProps) {
-  const { user } = useUser()
+  const { user } = useUser({ redirect: false })
 
   const BidForm = () => {
     const [amount, setAmount] = useState(0)
