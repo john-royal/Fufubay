@@ -1,8 +1,30 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Fufubay
 
-## Getting Started
+This is an auction website created for CSC 32200 (Software Engineering), built with [TypeScript](https://www.typescriptlang.org/), [Next.js](https://nextjs.org/), and [Express](https://expressjs.com/).
 
-First, run the development server:
+## Setting Up This Project
+
+To get started, clone this repository and make sure you have Node.js version 14 installed.
+
+Then, use NPM to install the project’s dependencies:
+
+```bash
+npm install
+```
+
+Next, use Prisma to initialize the database on your machine:
+
+```bash
+npm run migrate
+```
+
+Now, you’re ready to run the application on your machine using the development server.
+
+If the database or project dependencies are updated, you may need to repeat these steps.
+
+## Running the Development Server
+
+To run the development server, use the following command:
 
 ```bash
 npm run dev
@@ -10,19 +32,6 @@ npm run dev
 
 Open [http://localhost:8080](http://localhost:8080) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Reports
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+For more information about this project, view the [most recent project report](https://github.com/john-royal/Fufubay/blob/main/docs/phase-2-report.pdf).
