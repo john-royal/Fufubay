@@ -1,5 +1,6 @@
 import { User } from '@prisma/client'
 import { AddressElement } from '@stripe/react-stripe-js'
+import { StripeAddressElementChangeEvent } from '@stripe/stripe-js'
 import { useState } from 'react'
 import Stripe from 'stripe'
 import { Button, Form } from '../../components/form'
@@ -19,7 +20,15 @@ export default function AddressModal ({ isActive, handleClose }: ModalProps) {
     country: ''
   })
 
+  const handleChange = (e: StripeAddressElementChangeEvent) => {
+    setAddress(e.value.address)
+  }
+
   const handleSubmit = async () => {
+    const { line1, city, state, postal_code: postalCode } = address
+    if ([line1, city, state, postalCode].find(item => item == null || item === '') != null) {
+      throw new Error('Your address is incomplete.')
+    }
     await request({
       method: 'PATCH',
       url: `/api/users/${user.id}/stripe`,
@@ -33,7 +42,7 @@ export default function AddressModal ({ isActive, handleClose }: ModalProps) {
 
       <Form onSubmit={handleSubmit}>
         <StripeContext>
-          <AddressElement options={{ mode: 'shipping' }} onChange={e => setAddress(e.value.address)} onEscape={() => handleClose()} />
+          <AddressElement options={{ mode: 'shipping' }} onChange={handleChange} onEscape={handleClose} />
           <Button title='Save' className='mt-4' />
         </StripeContext>
       </Form>
