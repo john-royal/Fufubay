@@ -54,8 +54,7 @@ export default router([
     path: '/:id',
     async handler (req, res) {
       const auction = await prisma.auction.findUniqueOrThrow({
-        where: { id: parseInt(req.params.id) },
-        include: { seller: true }
+        where: { id: parseInt(req.params.id) }
       })
       if (req.session.user == null || auction.sellerID !== req.session.user.id) {
         return res.unauthorized()

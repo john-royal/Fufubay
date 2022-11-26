@@ -70,6 +70,9 @@ export default router([
         where: { id },
         data: req.body as User
       })
+      if (typeof req.body.email === 'string') {
+        await stripe.customers.update(user.stripeCustomerID, { email: user.email })
+      }
       await req.signIn(user)
       return res.success(user)
     }
