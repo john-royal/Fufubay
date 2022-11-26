@@ -8,8 +8,8 @@ export default router([
     path: '/',
     async handler (req, res) {
       const where: Prisma.AuctionWhereInput = {}
-      if (typeof req.query.sellerID === 'string') {
-        where.sellerID = parseInt(req.query.sellerID)
+      if (typeof req.query.sellerId === 'string') {
+        where.sellerId = parseInt(req.query.sellerId)
       }
       const auctions = await prisma.auction.findMany({ where, orderBy: { createdAt: 'desc' } })
       return res.success(auctions)
@@ -56,7 +56,7 @@ export default router([
       const auction = await prisma.auction.findUniqueOrThrow({
         where: { id: parseInt(req.params.id) }
       })
-      if (req.session.user == null || auction.sellerID !== req.session.user.id) {
+      if (req.session.user == null || auction.sellerId !== req.session.user.id) {
         return res.unauthorized()
       }
       await prisma.auction.update({
@@ -73,7 +73,7 @@ export default router([
       const auction = await prisma.auction.findUniqueOrThrow({
         where: { id: parseInt(req.params.id) }
       })
-      if (req.session.user == null || auction.sellerID !== req.session.user.id) {
+      if (req.session.user == null || auction.sellerId !== req.session.user.id) {
         return res.unauthorized()
       }
       await prisma.auction.delete({ where: { id: auction.id } })

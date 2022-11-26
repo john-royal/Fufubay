@@ -1,4 +1,4 @@
-import { User } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import normalizeEmail from 'normalize-email'
 import prisma from '../prisma'
 import stripe from '../stripe'
@@ -31,7 +31,7 @@ export default router([
           username,
           email,
           password,
-          stripeCustomerID: stripeCustomer.id
+          stripeId: stripeCustomer.id
         }
       })
       await req.signIn(user)
@@ -68,10 +68,10 @@ export default router([
       }
       const user = await prisma.user.update({
         where: { id },
-        data: req.body as User
+        data: req.body as Prisma.UserUpdateInput
       })
       if (typeof req.body.email === 'string') {
-        await stripe.customers.update(user.stripeCustomerID, { email: user.email })
+        await stripe.customers.update(user.stripeId, { email: user.email })
       }
       await req.signIn(user)
       return res.success(user)
@@ -90,7 +90,7 @@ export default router([
       })
       await Promise.all([
         prisma.user.delete({ where: { id } }),
-        stripe.customers.del(user.stripeCustomerID)
+        stripe.customers.del(user.stripeId)
       ])
       return res.success(null)
     }
@@ -104,8 +104,8 @@ export default router([
         return res.unauthorized()
       }
       const [customer, paymentMethods] = await Promise.all([
-        stripe.customers.retrieve(req.session.user.stripeCustomerID),
-        stripe.customers.listPaymentMethods(req.session.user.stripeCustomerID, { type: 'card' })
+        stripe.customers.retrieve(req.session.user.stripeId),
+        stripe.customers.listPaymentMethods(req.session.user.stripeId, { type: 'card' })
       ])
       return res.success({ user: req.session.user, customer, paymentMethods })
     }
@@ -118,7 +118,7 @@ export default router([
       if (req.session.user == null || id !== req.session.user.id) {
         return res.unauthorized()
       }
-      const customer = await stripe.customers.update(req.session.user.stripeCustomerID, req.body)
+      const customer = await stripe.customers.update(req.session.user.stripeId, req.body)
       return res.success(customer)
     }
   },
@@ -131,7 +131,7 @@ export default router([
         return res.unauthorized()
       }
       const setupIntent = await stripe.setupIntents.create({
-        customer: req.session.user.stripeCustomerID
+        customer: req.session.user.stripeId
       })
       return res.success({ setupIntent })
     }

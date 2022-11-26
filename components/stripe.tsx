@@ -8,10 +8,10 @@ import useUser from '../lib/user'
 
 const stripePromise = loadStripe('pk_test_m8tbfxzzrHp1twla3WP3Cwar003SJUXAyx')
 
-async function loadSetupIntent (userID: number): Promise<Stripe.SetupIntent> {
+async function loadSetupIntent (userId: number): Promise<Stripe.SetupIntent> {
   const response = await request<{ setupIntent: Stripe.SetupIntent }>({
     method: 'POST',
-    url: `/api/users/${userID}/setup-intents`,
+    url: `/api/users/${userId}/setup-intents`,
     body: {}
   })
   return response.setupIntent

@@ -35,7 +35,7 @@ export async function getServerSideProps ({ params: { id, slug } }: { params: { 
 
 export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
   const [bidding, setBidding] = useState(false)
-  const { data, mutate } = useSWR<{ max: Number, bids: UserBid[] }>(`http://localhost:8080/api/bids?auctionID=${auction.id}&include=user`, async url => {
+  const { data, mutate } = useSWR<{ max: Number, bids: UserBid[] }>(`http://localhost:8080/api/bids?auctionId=${auction.id}&include=user`, async url => {
     const bids = await request<UserBid[]>({ method: 'GET', url })
     const max = bids.reduce((max, bid) => Math.max(max, bid.amount), 0)
     return { max, bids }
@@ -50,7 +50,7 @@ export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
 
   return (
     <div className='container mt-5 columns level is-centered is-variable is-1-mobile is-0-tablet is-3-desktop is-8-widescreen is-2-fullhd'>
-      <BidModal isActive={bidding} handleClose={() => setBidding(false)} auctionID={auction.id} />
+      <BidModal isActive={bidding} handleClose={() => setBidding(false)} auctionId={auction.id} />
 
       <div className='column is-one-fifth'></div>
       <div className='column is-half'>
@@ -64,7 +64,7 @@ export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
       <h2 className='title'>Bids</h2>
         {/* Feel free to rework or move this: */}
         <div className="notification is-dark level">
-          <div className="level-item">High Bid:&nbsp;<strong>${data == null ? '0' : data.max.toString()}</strong></div>
+          <div className="level-item">High Bid:&nbsp;<strong>${String(data?.max ?? 0)}</strong></div>
           <div className="level-item"><strong>{data?.bids.length ?? 0}</strong>&nbsp;Bids</div>
         </div>
         <div className='rows'>

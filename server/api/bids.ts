@@ -9,11 +9,11 @@ export default router([
     path: '/',
     async handler (req, res) {
       const where: Prisma.BidWhereInput = {}
-      if (typeof req.query.auctionID === 'string') {
-        where.auctionID = parseInt(req.query.auctionID)
+      if (typeof req.query.auctionId === 'string') {
+        where.auctionId = parseInt(req.query.auctionId)
       }
-      if (typeof req.query.userID === 'string') {
-        where.userID = parseInt(req.query.userID)
+      if (typeof req.query.userId === 'string') {
+        where.userId = parseInt(req.query.userId)
       }
 
       const include: Prisma.BidInclude = {}
@@ -36,28 +36,28 @@ export default router([
     method: 'post',
     path: '/',
     async handler (req, res) {
-      const { amount, auctionID } = req.body as Bid
+      const { amount, auctionId } = req.body as Bid
       const user = req.session.user
       if (user == null) {
         return res.unauthorized()
       }
       const { _max: { amount: minimumAmount } } = await prisma.bid.aggregate({
         _max: { amount: true },
-        where: { auctionID }
+        where: { auctionId }
       })
       if (amount <= (minimumAmount ?? 0)) {
-        return res.badRequest(`You must bid at least $${minimumAmount ?? 0}.`)
+        return res.badRequest(`You must bid at least $${String(minimumAmount ?? 0)}.`)
       }
       const { data: paymentCards } = await stripe.paymentMethods.list({
-        customer: user.stripeCustomerID,
+        customer: user.stripeId,
         type: 'card'
       })
       if (paymentCards.length === 0) {
         return res.badRequest('Please add a payment card to your account.')
       }
       // TODO: Save Payment Intent ID to use for confirmation.
-      await stripe.paymentIntents.create({
-        customer: user.stripeCustomerID,
+      const paymentIntent = await stripe.paymentIntents.create({
+        customer: user.stripeId,
         amount: amount * 1000,
         currency: 'usd',
         capture_method: 'manual',
@@ -66,9 +66,10 @@ export default router([
       })
       const data: Prisma.BidCreateInput = {
         amount,
+        stripeId: paymentIntent.id,
         auction: {
           connect: {
-            id: req.body.auctionID
+            id: req.body.auctionId
           }
         },
         user: {

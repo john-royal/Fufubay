@@ -6,41 +6,54 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgres"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id               Int       @id @default(autoincrement())
-  createdAt        DateTime  @default(now())
-  username         String    @unique
-  email            String    @unique
-  password         String
-  stripeCustomerID String
-  bio              String    @default("")
-  image            String    @default("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png")
-  auctions         Auction[]
-  bids             Bid[]
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  email     String    @unique
+  password  String
+  bio       String    @default("")
+  image     String    @default("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png")
+  address   Json?     @db.JsonB
+  payment   Json?     @db.JsonB
+  createdAt DateTime  @default(now())
+  stripeId  String
+  auctions  Auction[]
+  bids      Bid[]
+}
+
+enum AuctionStatus {
+  PENDING_REVIEW
+  LIVE
+  SOLD
+  CANCELED
 }
 
 model Auction {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
+  id          Int           @id @default(autoincrement())
   title       String
   description String
   slug        String
-  image       String   @default("https://upload.wikimedia.org/wikipedia/commons/3/3f/Placeholder_view_vector.svg")
-  sellerID    Int
-  seller      User     @relation(fields: [sellerID], references: [id])
+  image       String        @default("https://upload.wikimedia.org/wikipedia/commons/3/3f/Placeholder_view_vector.svg")
+  status      AuctionStatus @default(PENDING_REVIEW)
+  createdAt   DateTime      @default(now())
+  startsAt    DateTime?
+  endsAt      DateTime?
+  sellerId    Int
+  seller      User          @relation(fields: [sellerId], references: [id])
   bids        Bid[]
 }
 
 model Bid {
   id        Int      @id @default(autoincrement())
-  date      DateTime @default(now())
   amount    Int
-  auctionID Int
-  userID    Int
-  auction   Auction  @relation(fields: [auctionID], references: [id])
-  user      User     @relation(fields: [userID], references: [id])
+  date      DateTime @default(now())
+  auctionId Int
+  stripeId  String
+  userId    Int
+  auction   Auction  @relation(fields: [auctionId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
