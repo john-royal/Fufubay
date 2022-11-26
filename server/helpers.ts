@@ -24,10 +24,10 @@ export default function helpers (req: Request, res: Response, next: NextFunction
         data
       })
     },
-    badRequest () {
+    badRequest (message?: string) {
       return res.status(400).json({
         success: false,
-        error: { error: 'Bad Request' }
+        error: { error: 'Bad Request', message }
       })
     },
     unauthorized (message?: string) {

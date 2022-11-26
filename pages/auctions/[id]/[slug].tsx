@@ -64,7 +64,7 @@ export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
       <h2 className='title'>Bids</h2>
         {/* Feel free to rework or move this: */}
         <div className="notification is-dark level">
-          <div className="level-item">High Bid:&nbsp;<strong>${data?.max ?? 0}</strong></div>
+          <div className="level-item">High Bid:&nbsp;<strong>${data == null ? '0' : data.max.toString()}</strong></div>
           <div className="level-item"><strong>{data?.bids.length ?? 0}</strong>&nbsp;Bids</div>
         </div>
         <div className='rows'>
