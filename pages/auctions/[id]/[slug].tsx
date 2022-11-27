@@ -35,6 +35,7 @@ export async function getServerSideProps ({ params: { id, slug } }: { params: { 
 
 export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
   const [bidding, setBidding] = useState(false)
+  const [refresh, setRefresh] = useState(false)
   const { data, mutate } = useSWR<{ max: Number, bids: UserBid[] }>(`http://localhost:8080/api/bids?auctionId=${auction.id}&include=user`, async url => {
     const bids = await request<UserBid[]>({ method: 'GET', url })
     const max = bids.reduce((max, bid) => Math.max(max, bid.amount), 0)
@@ -42,11 +43,17 @@ export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
   })
 
   useEffect(() => {
-    // update bid list when bid modal is closed
-    if (!bidding) {
+    if (bidding) {
+      setRefresh(true)
+    }
+  }, [bidding])
+
+  useEffect(() => {
+    if (refresh && !bidding) {
+      setRefresh(false)
       void mutate()
     }
-  }, [bidding, mutate])
+  }, [refresh, bidding, mutate])
 
   return (
     <div className='container mt-5 columns level is-centered is-variable is-1-mobile is-0-tablet is-3-desktop is-8-widescreen is-2-fullhd'>
@@ -54,7 +61,7 @@ export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
 
       <div className='column is-one-fifth'></div>
       <div className='column is-half'>
-        <Image src={auction.image} alt={auction.title} width={680} height={540} />
+        <Image src={auction.image} alt={auction.title} width={680} height={540} priority />
         <h1 className='title'>{auction.title}</h1>
         <p>{auction.description}</p>
         <p>Sold by <Link href='/users/[id]/[slug]' as={`/users/${auction.seller.id}/${auction.seller.username}`} style={{ fontWeight: 'bold' }}>{auction.seller.username}</Link></p>
@@ -64,6 +71,7 @@ export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
       <h2 className='title'>Bids</h2>
         {/* Feel free to rework or move this: */}
         <div className="notification is-dark level">
+          <div className="level-item">Auction Ends:&nbsp;<strong>{new Date(auction.endsAt as Date).toLocaleDateString()}</strong></div>
           <div className="level-item">High Bid:&nbsp;<strong>${String(data?.max ?? 0)}</strong></div>
           <div className="level-item"><strong>{data?.bids.length ?? 0}</strong>&nbsp;Bids</div>
         </div>

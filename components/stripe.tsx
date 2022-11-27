@@ -1,10 +1,10 @@
-import { User } from '@prisma/client'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { PropsWithChildren, useEffect, useState } from 'react'
 import Stripe from 'stripe'
 import request from '../lib/request'
 import useUser from '../lib/user'
+import { User } from '../shared/types'
 
 const stripePromise = loadStripe('pk_test_m8tbfxzzrHp1twla3WP3Cwar003SJUXAyx')
 

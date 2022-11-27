@@ -1,8 +1,8 @@
-import { User } from '@prisma/client'
 import useForm from '../../lib/form'
 import useUser from '../../lib/user'
 import { SetScreen } from '.'
 import { Button, Form, TextField } from '../form'
+import { User } from '../../shared/types'
 
 export default function CreateAccountForm ({ setScreen }: { setScreen: SetScreen }) {
   const { setUser } = useUser({ redirect: false })

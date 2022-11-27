@@ -1,5 +1,5 @@
 import { Response as RawResponse } from 'express'
-import { User } from '@prisma/client'
+import { User } from '../shared/types'
 
 declare global {
   namespace Express {

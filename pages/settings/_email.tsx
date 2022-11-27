@@ -1,13 +1,13 @@
-import { User } from '@prisma/client'
 import { useState } from 'react'
 import { Button, Form, TextField } from '../../components/form'
 import Modal, { ModalProps } from '../../components/modal'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
+import { User } from '../../shared/types'
 
 export default function EmailModal ({ isActive, handleClose }: ModalProps) {
   const { user } = useUser() as { user: User }
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(user.email)
 
   const handleSubmit = async () => {
     await request({

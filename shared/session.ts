@@ -1,4 +1,4 @@
-import { User } from '@prisma/client'
+import { User } from './types'
 import { IronSessionOptions } from 'iron-session'
 
 export const sessionOptions: IronSessionOptions = {

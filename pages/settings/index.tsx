@@ -1,12 +1,11 @@
-import { User } from '@prisma/client'
 import { withIronSessionSsr } from 'iron-session/next'
-import { createContext, Fragment, useContext, useEffect, useState } from 'react'
-import Stripe from 'stripe'
+import { createContext, useContext, useEffect, useState } from 'react'
 import useSWR from 'swr'
 import UserHeader from '../../components/user-header'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
 import { sessionOptions } from '../../shared/session'
+import { User } from '../../shared/types'
 import AddressModal from './_address'
 import EmailModal from './_email'
 import PasswordModal from './_password'
@@ -19,12 +18,6 @@ enum Item {
   EMAIL_ADDRESS = 'Email Address',
   CREDIT_CARD = 'Credit Card',
   ADDRESS = 'Address'
-}
-
-interface Props {
-  user: User
-  customer: Stripe.Customer
-  paymentMethods: Stripe.ApiList<Stripe.PaymentMethod>
 }
 
 type ModalStateType = [Item | null, (item: Item | null) => void]
@@ -47,8 +40,8 @@ export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
 }, sessionOptions)
 
 export default function SettingsPage () {
-  const { user } = useUser()
-  const { data, mutate } = useSWR<Props>(`/api/users/${user?.id as number}/stripe`, async url => {
+  useUser()
+  const { data: user, mutate } = useSWR<User>('/api/users/me', async url => {
     return await request({
       method: 'GET',
       url
@@ -57,20 +50,20 @@ export default function SettingsPage () {
   const [item, setItem] = useState<Item | null>(null)
 
   useEffect(() => {
-    if (item == null && data != null) void mutate()
-  }, [item, data, mutate])
+    if (item == null && user != null) void mutate()
+  }, [item, user, mutate])
 
-  if (data == null) return <></>
+  if (user == null) return <></>
 
   return (
     <ModalContext.Provider value={[item, setItem]}>
         <Modal />
-        <SettingsPageBody {...data} />
+        <SettingsPageBody user={user} />
     </ModalContext.Provider>
   )
 }
 
-function SettingsPageBody ({ user, customer, paymentMethods }: Props) {
+function SettingsPageBody ({ user }: { user: User }) {
   const [, setItem] = useContext(ModalContext)
   const sections: SectionOptions[] = [
     {
@@ -87,16 +80,14 @@ function SettingsPageBody ({ user, customer, paymentMethods }: Props) {
       title: 'Payments',
       items: {
         [Item.CREDIT_CARD]: (() => {
-          if (paymentMethods.data.length > 0) {
-            const card = paymentMethods.data[0].card as Stripe.PaymentMethod.Card
-            const brand = card.brand[0].toUpperCase() + card.brand.slice(1)
-            return `${brand} Ending in ${card.last4}`
-          }
+          if (user.paymentCard == null) return
+          const { brand, last4 } = user.paymentCard
+          return `${brand} Ending in ${last4}`
         })(),
         [Item.ADDRESS]: (() => {
-          if (customer.address == null) return
-          const { line1, line2, city, state, postal_code: postalCode } = customer.address
-          return [line1, line2, city, state, postalCode].filter(item => item !== '').join(', ')
+          if (user.address == null) return
+          const { line1, line2, city, state, postalCode } = user.address
+          return [line1, line2, city, state, postalCode].filter(item => item != null).join(', ')
         })()
       }
     }
@@ -118,9 +109,20 @@ function SettingsPageBody ({ user, customer, paymentMethods }: Props) {
 }
 
 function Section ({ title, items }: SectionOptions) {
+  return (
+    <section className='m-5'>
+        <h2 className='title is-4'>{title}</h2>
+        {Object.entries(items).map(([item, value]) => (
+            <ItemRow key={item} item={item as Item} value={value} />
+        ))}
+    </section>
+  )
+}
+
+function ItemRow ({ item, value }: { item: Item, value: string | null | undefined }) {
   const [, setItem] = useContext(ModalContext)
 
-  const ItemRow = ({ item, value }: { item: Item, value: string | null | undefined }) => (
+  return (
     <div className='level'>
         <div className='level-left'>
             <div>
@@ -132,15 +134,6 @@ function Section ({ title, items }: SectionOptions) {
             <button className='button is-small' onClick={() => setItem(item)}>Edit {item}</button>
         </div>
     </div>
-  )
-
-  return (
-    <section className='m-5'>
-        <h2 className='title is-4'>{title}</h2>
-        {Object.entries(items).map(([item, value]) => (
-            <ItemRow key={item} item={item as Item} value={value} />
-        ))}
-    </section>
   )
 }
 

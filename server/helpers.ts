@@ -1,4 +1,4 @@
-import { User } from '@prisma/client'
+import { User } from '../shared/types'
 import { Request, Response, NextFunction } from 'express'
 
 export default function helpers (req: Request, res: Response, next: NextFunction): void {

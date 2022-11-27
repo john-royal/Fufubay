@@ -1,13 +1,32 @@
-import { Prisma } from '@prisma/client'
+import { Auction, AuctionStatus, Prisma, UserRole } from '@prisma/client'
+import { User } from '../../shared/types'
 import prisma from '../prisma'
 import router from './router'
+
+const canView = (user: User | undefined, auction: Auction): boolean => {
+  const isPublic = auction.status === AuctionStatus.LIVE || auction.status === AuctionStatus.SOLD
+  const isAuthorized = user?.role === UserRole.SUPER_USER || user?.id === auction?.sellerId
+  return isPublic || isAuthorized
+}
+
+const canEdit = (user: { id: User['id'], role: UserRole } | undefined, auction: { sellerId: Auction['sellerId'] }): boolean => {
+  if (user == null || user.role === UserRole.PENDING_REVIEW) {
+    return false
+  } else if (user.role === UserRole.SUPER_USER) {
+    return true
+  } else {
+    return user.id === auction.sellerId
+  }
+}
 
 export default router([
   {
     method: 'get',
     path: '/',
     async handler (req, res) {
-      const where: Prisma.AuctionWhereInput = {}
+      const where: Prisma.AuctionWhereInput = {
+        status: req.query.status as AuctionStatus
+      }
       if (typeof req.query.sellerId === 'string') {
         where.sellerId = parseInt(req.query.sellerId)
       }
@@ -28,7 +47,11 @@ export default router([
         slug: req.body.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
         seller: {
           connect: { id: req.session.user.id }
-        }
+        },
+        // TODO: remove when admin approval is added
+        status: AuctionStatus.LIVE,
+        startsAt: new Date(),
+        endsAt: new Date(Date.now() + (7 * 24 * 60 * 60 * 1000))
       }
       const auction = await prisma.auction.create({ data })
       return res.created(auction)
@@ -42,10 +65,12 @@ export default router([
         where: { id: parseInt(req.params.id) },
         include: { seller: true }
       })
-      if (auction != null) {
+      if (auction == null) {
+        return res.notFound()
+      } else if (canView(req.session.user, auction)) {
         return res.success(auction)
       } else {
-        return res.notFound()
+        return res.unauthorized()
       }
     }
   },
@@ -53,31 +78,35 @@ export default router([
     method: 'patch',
     path: '/:id',
     async handler (req, res) {
-      const auction = await prisma.auction.findUniqueOrThrow({
+      const { id, sellerId } = await prisma.auction.findUniqueOrThrow({
+        select: { id: true, sellerId: true },
         where: { id: parseInt(req.params.id) }
       })
-      if (req.session.user == null || auction.sellerId !== req.session.user.id) {
+      if (canEdit(req.session.user, { sellerId })) {
+        const auction = await prisma.auction.update({
+          where: { id },
+          data: req.body
+        })
+        return res.success(auction)
+      } else {
         return res.unauthorized()
       }
-      await prisma.auction.update({
-        where: { id: auction.id },
-        data: Object.assign(auction, req.body)
-      })
-      return res.success(null)
     }
   },
   {
     method: 'delete',
     path: '/:id',
     async handler (req, res) {
-      const auction = await prisma.auction.findUniqueOrThrow({
+      const { id, sellerId } = await prisma.auction.findUniqueOrThrow({
+        select: { id: true, sellerId: true },
         where: { id: parseInt(req.params.id) }
       })
-      if (req.session.user == null || auction.sellerId !== req.session.user.id) {
+      if (canEdit(req.session.user, { sellerId })) {
+        await prisma.auction.delete({ where: { id } })
+        return res.success(null)
+      } else {
         return res.unauthorized()
       }
-      await prisma.auction.delete({ where: { id: auction.id } })
-      return res.success(null)
     }
   }
 ])

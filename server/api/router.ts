@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express'
+import { NextFunction, Request, RequestHandler, Response, Router } from 'express'
 
 export interface Route {
   method: 'all' | 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head'
@@ -20,4 +20,15 @@ export default function router (routes: Route[]): Router {
   }
 
   return router
+}
+
+type Handler = (req: Request, res: Response, next: NextFunction) => Response | Promise<Response> | Promise<void>
+
+export function withHandler (handler: Handler): RequestHandler {
+  return (req, res, next) => {
+    (async () => {
+      await handler.call({}, req, res, next)
+    })()
+      .catch(err => next(err))
+  }
 }
