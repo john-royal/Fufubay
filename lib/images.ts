@@ -21,7 +21,6 @@ export async function uploadImage<T> (url: string, image: File): Promise<T> {
 
 export function makeImageUrl ({ src, width, quality }: ImageLoaderProps): string {
   const url = new URL(src)
-  console.log(src)
   if (url.hostname !== 'csc-32200-fufubay-images.s3.amazonaws.com') {
     return src
   }
