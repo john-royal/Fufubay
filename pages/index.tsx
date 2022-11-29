@@ -4,7 +4,7 @@ import Categories from '../components/categories'
 import { get } from '../lib/request'
 
 export async function getServerSideProps () {
-  const response = await get<Auction[]>('http://localhost:8080/api/auctions')
+  const response = await get<Auction[]>('http://localhost:8080/api/auctions?status=ACTIVE')
   return {
     props: {
       auctions: response.success ? response.data : []

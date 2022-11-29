@@ -1,4 +1,4 @@
-import { createContext, FormEvent, HTMLInputTypeAttribute, InputHTMLAttributes, PropsWithChildren, useContext, useState } from 'react'
+import { ChangeEvent, createContext, FormEvent, HTMLInputTypeAttribute, InputHTMLAttributes, PropsWithChildren, useContext, useState } from 'react'
 
 const ButtonContext = createContext(false)
 
@@ -52,6 +52,35 @@ export function TextField (props: InputHTMLAttributes<HTMLInputElement> & {
     <Field title={props.title} id={props.name}>
         <input className='input' {...props} placeholder={props.placeholder ?? props.title} disabled={props.disabled ?? working}/>
     </Field>
+  )
+}
+
+export function ImageField ({ onImageChange }: { onImageChange: (file: File | null) => void }) {
+  const [imageName, setImageName] = useState('')
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const image = e.target.files?.item(0)
+    setImageName(image?.name ?? '')
+    onImageChange(image ?? null)
+  }
+
+  return (
+      <div className='file has-name is-boxed'>
+        <label className='file-label'>
+          <input className='file-input' accept='image' type='file' name='image' onChange={handleFileChange} />
+          <span className='file-cta'>
+            <span className='file-icon'>
+              <i className='fas fa-upload'></i>
+            </span>
+            <span className='file-label'>
+              Choose an image
+            </span>
+          </span>
+          <span className='file-name'>
+            {imageName}
+          </span>
+        </label>
+      </div>
   )
 }
 

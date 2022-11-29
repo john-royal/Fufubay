@@ -1,5 +1,5 @@
 const Search = () => {
-    return (
+  return (
         <div className="field has-addons conatiner box columns is-centered field is-fullwidth">
   <div className="control">
     <input className="input is-max-widescreen" type="text" placeholder="Search item..." />
@@ -10,7 +10,7 @@ const Search = () => {
     </a>
   </div>
 </div>
-     );
+  )
 }
 
-export default Search;
+export default Search

@@ -1,6 +1,7 @@
 import prisma from '../prisma'
 import router from './router'
 import * as scrypt from '../util/scrypt'
+import { User } from '../../shared/types'
 
 export default router([
   {
@@ -15,7 +16,7 @@ export default router([
       const isAuthenticated = user != null && await scrypt.compare(password, user.password)
 
       if (isAuthenticated) {
-        await req.signIn(user)
+        await req.signIn(user as unknown as User)
         return res.success(user)
       } else if (user == null) {
         return res.notFound('We couldn’t find that account.')

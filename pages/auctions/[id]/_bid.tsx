@@ -4,17 +4,17 @@ import Modal, { ModalProps, useModal } from '../../../components/modal'
 import request from '../../../lib/request'
 import useUser from '../../../lib/user'
 
-export default function BidModal ({ auctionID, isActive, handleClose }: { auctionID: number } & ModalProps) {
+export default function BidModal ({ auctionId, isActive, handleClose }: { auctionId: number } & ModalProps) {
   const { user } = useUser({ redirect: false })
 
   return (
     <Modal isActive={isActive} handleClose={handleClose}>
-        {user == null ? <SignInPrompt /> : <BidForm userID={user.id} auctionID={auctionID} />}
+        {user == null ? <SignInPrompt /> : <BidForm userId={user.id} auctionId={auctionId} />}
     </Modal>
   )
 }
 
-function BidForm ({ userID, auctionID }: { userID: number, auctionID: number }) {
+function BidForm ({ userId, auctionId }: { userId: number, auctionId: number }) {
   const { handleClose } = useModal()
   const [amount, setAmount] = useState(0)
 
@@ -24,8 +24,8 @@ function BidForm ({ userID, auctionID }: { userID: number, auctionID: number }) 
       url: '/api/bids',
       body: {
         amount,
-        auctionID,
-        userID
+        auctionId,
+        userId
       }
     })
     handleClose()
