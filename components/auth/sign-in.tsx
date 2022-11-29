@@ -1,7 +1,7 @@
 import useForm from '../../lib/form'
 import useUser from '../../lib/user'
 import { SetScreen } from '.'
-import { Form, TextField, Button } from '../form'
+import { Form, TextField, Button } from '../common/form'
 import { User } from '../../shared/types'
 
 export default function SignInForm ({ setScreen }: { setScreen: SetScreen }) {

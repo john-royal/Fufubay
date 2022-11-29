@@ -1,6 +1,6 @@
 import { Auction } from '@prisma/client'
-import AuctionItem from '../components/auction-item'
-import Categories from '../components/categories'
+import AuctionItem from '../components/auctions/auction-item'
+import Categories from '../components/auctions/categories'
 import { get } from '../lib/request'
 
 export async function getServerSideProps () {

@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { Button, Form, TextField } from '../../components/form'
-import Modal, { ModalProps } from '../../components/modal'
+import { Button, Form, TextField } from '../common/form'
+import { useModal } from '../common/modal'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
 import { User } from '../../shared/types'
 
-export default function EmailModal ({ isActive, handleClose }: ModalProps) {
+export default function EmailModal () {
   const { user } = useUser() as { user: User }
+  const { handleClose } = useModal()
+
   const [email, setEmail] = useState(user.email)
 
   const handleSubmit = async () => {
@@ -19,13 +21,13 @@ export default function EmailModal ({ isActive, handleClose }: ModalProps) {
   }
 
   return (
-    <Modal isActive={isActive} handleClose={handleClose}>
+    <>
       <h1 className='title'>Email Address</h1>
 
       <Form onSubmit={handleSubmit}>
         <TextField title='Email' name='email' type='email' value={email} onChange={e => setEmail(e.target.value)} />
         <Button title='Save' className='mt-4' />
       </Form>
-    </Modal>
+    </>
   )
 }

@@ -1,21 +1,9 @@
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js'
-import { Button, Form } from '../../components/form'
-import Modal, { ModalProps, useModal } from '../../components/modal'
-import StripeContext from '../../components/stripe'
+import { Button, Form } from '../common/form'
+import { useModal } from '../common/modal'
+import StripeContext from './stripe'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
-
-export default function PaymentModal ({ isActive, handleClose }: ModalProps) {
-  return (
-    <Modal isActive={isActive} handleClose={handleClose}>
-      <h1 className='title'>Credit Card</h1>
-
-      <StripeContext>
-        <PaymentForm />
-      </StripeContext>
-    </Modal>
-  )
-}
 
 function PaymentForm () {
   const { user } = useUser()
@@ -45,9 +33,21 @@ function PaymentForm () {
   }
 
   return (
-      <Form onSubmit={handleSubmit}>
-        <PaymentElement />
-        <Button title='Save' className='mt-4' />
-      </Form>
+    <Form onSubmit={handleSubmit}>
+      <PaymentElement onEscape={() => handleClose()} />
+      <Button title='Save' className='mt-4' />
+    </Form>
+  )
+}
+
+export default function PaymentModal () {
+  return (
+    <>
+      <h1 className='title'>Credit Card</h1>
+
+      <StripeContext>
+        <PaymentForm />
+      </StripeContext>
+    </>
   )
 }

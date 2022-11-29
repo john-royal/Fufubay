@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import { makeImageUrl } from '../../../lib/images'
 import request from '../../../lib/request'
-import BidModal from './_bid'
+import BidModal from '../../../components/auctions/bid-form'
 
 interface SellerAuction extends Auction {
   seller: User
@@ -37,7 +37,7 @@ export async function getServerSideProps ({ params: { id, slug } }: { params: { 
 export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
   const [bidding, setBidding] = useState(false)
   const [refresh, setRefresh] = useState(false)
-  const { data, mutate } = useSWR<{ max: Number, bids: UserBid[] }>(`http://localhost:8080/api/bids?auctionId=${auction.id}&include=user`, async url => {
+  const { data, mutate } = useSWR<{ max: Number, bids: UserBid[] }>(`/api/bids?auctionId=${auction.id}&include=user`, async url => {
     const bids = await request<UserBid[]>({ method: 'GET', url })
     const max = bids.reduce((max, bid) => Math.max(max, bid.amount), 0)
     return { max, bids }

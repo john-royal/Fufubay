@@ -1,15 +1,17 @@
 import { AddressElement } from '@stripe/react-stripe-js'
 import { StripeAddressElementChangeEvent } from '@stripe/stripe-js'
 import { useState } from 'react'
-import { Button, Form } from '../../components/form'
-import Modal, { ModalProps } from '../../components/modal'
-import StripeContext from '../../components/stripe'
+import { Button, Form } from '../common/form'
+import { useModal } from '../common/modal'
+import StripeContext from './stripe'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
 import { User } from '../../shared/types'
 
-export default function AddressModal ({ isActive, handleClose }: ModalProps) {
+export default function AddressModal () {
   const { user } = useUser() as { user: User }
+  const { handleClose } = useModal()
+
   const [address, setAddress] = useState({
     line1: '',
     line2: '',
@@ -47,7 +49,7 @@ export default function AddressModal ({ isActive, handleClose }: ModalProps) {
   }
 
   return (
-    <Modal isActive={isActive} handleClose={handleClose}>
+    <>
       <h1 className='title'>Address</h1>
 
       <Form onSubmit={handleSubmit}>
@@ -56,6 +58,6 @@ export default function AddressModal ({ isActive, handleClose }: ModalProps) {
           <Button title='Save' className='mt-4' />
         </StripeContext>
       </Form>
-    </Modal>
+    </>
   )
 }

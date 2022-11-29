@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { Button, Form, TextField } from '../../components/form'
-import Modal, { ModalProps } from '../../components/modal'
+import { Button, Form, TextField } from '../common/form'
+import { useModal } from '../common/modal'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
 import { User } from '../../shared/types'
 
-export default function PasswordModal ({ isActive, handleClose }: ModalProps) {
+export default function PasswordModal () {
   const { user } = useUser() as { user: User }
+  const { handleClose } = useModal()
+
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
@@ -24,7 +26,7 @@ export default function PasswordModal ({ isActive, handleClose }: ModalProps) {
   }
 
   return (
-    <Modal isActive={isActive} handleClose={handleClose}>
+    <>
         <h1 className='title'>Password</h1>
 
         <Form onSubmit={handleSubmit}>
@@ -32,6 +34,6 @@ export default function PasswordModal ({ isActive, handleClose }: ModalProps) {
             <TextField title='Confirm Password' name='confirm-password' type='password' value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
             <Button title='Save' className='mt-4' />
         </Form>
-    </Modal>
+    </>
   )
 }

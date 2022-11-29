@@ -1,7 +1,7 @@
 import { Auction } from '@prisma/client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { makeImageUrl } from '../lib/images'
+import { makeImageUrl } from '../../lib/images'
 
 export default function AuctionItem ({ auction }: { auction: Auction }) {
   const linkProps = {

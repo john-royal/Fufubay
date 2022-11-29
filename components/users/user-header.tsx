@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { ReactNode } from 'react'
-import { makeImageUrl } from '../lib/images'
+import { makeImageUrl } from '../../lib/images'
 
 export interface Props {
   username: string

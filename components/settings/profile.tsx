@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import { Button, Form, ImageField, TextField } from '../../components/form'
-import Modal, { ModalProps } from '../../components/modal'
+import { Button, Form, ImageField, TextField } from '../common/form'
 import { uploadImage } from '../../lib/images'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
 import { User } from '../../shared/types'
+import { useModal } from '../common/modal'
 
-export default function ProfileModal ({ isActive, handleClose }: ModalProps) {
+export default function ProfileModal () {
   const { user } = useUser() as { user: User }
+  const { handleClose } = useModal()
+
   const [username, setUsername] = useState(user.username)
   const [bio, setBio] = useState(user.bio)
   const [image, setImage] = useState<File | null>(null)
@@ -25,7 +27,7 @@ export default function ProfileModal ({ isActive, handleClose }: ModalProps) {
   }
 
   return (
-    <Modal isActive={isActive} handleClose={handleClose}>
+    <>
         <h1 className='title'>Profile</h1>
 
         <Form onSubmit={handleSubmit}>
@@ -34,6 +36,6 @@ export default function ProfileModal ({ isActive, handleClose }: ModalProps) {
             <ImageField onImageChange={setImage} />
             <Button title='Save' className='mt-4' />
         </Form>
-    </Modal>
+    </>
   )
 }

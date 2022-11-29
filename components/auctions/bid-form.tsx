@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Button, Form, TextField } from '../../../components/form'
-import Modal, { ModalProps, useModal } from '../../../components/modal'
-import request from '../../../lib/request'
-import useUser from '../../../lib/user'
+import { Button, Form, TextField } from '../common/form'
+import Modal, { ModalProps, useModal } from '../common/modal'
+import request from '../../lib/request'
+import useUser from '../../lib/user'
 
 export default function BidModal ({ auctionId, isActive, handleClose }: { auctionId: number } & ModalProps) {
   const { user } = useUser({ redirect: false })

@@ -1,16 +1,17 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { get } from '../lib/request'
-import useUser from '../lib/user'
-import AuthModal, { Screen } from './auth'
+import { get } from '../../lib/request'
+import useUser from '../../lib/user'
+import AuthModal, { Screen } from '../auth'
 
-export default function Navbar (pagePropsForDebug: any) {
+export default function Navbar () {
   const router = useRouter()
+  const { user, setUser } = useUser({ redirect: false })
+
   const [modal, setModal] = useState<Screen | null>(null)
   const [showMenu, setShowMenu] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
-  const { user, setUser } = useUser({ redirect: false })
 
   const signOut = () => {
     setSigningOut(true)
@@ -52,16 +53,6 @@ export default function Navbar (pagePropsForDebug: any) {
                 <Link href='/auctions/create' className='navbar-item'>
                     Sell With Us
                 </Link>
-
-                <div className='navbar-item has-dropdown is-hoverable'>
-                    <a className='navbar-link'>
-                        Debug
-                    </a>
-                    <div className='navbar-dropdown p-4'>
-                        <h2 className='has-text-weight-bold'>Page Props</h2>
-                        <pre>{JSON.stringify(pagePropsForDebug, null, 2)}</pre>
-                    </div>
-                </div>
             </div>
 
             <div className='navbar-end'>
@@ -80,10 +71,10 @@ export default function Navbar (pagePropsForDebug: any) {
                     <div className='navbar-item'>
                         <div className='buttons'>
                             <button className='button is-primary' onClick={e => setModal('create-account')}>
-                                <strong>Sign up</strong>
+                                <strong>Sign Up</strong>
                             </button>
                             <button className='button is-light' onClick={e => setModal('sign-in')}>
-                                Log in
+                                Log In
                             </button>
                         </div>
                     </div>

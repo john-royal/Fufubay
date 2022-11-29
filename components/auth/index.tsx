@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router'
 import React, { useEffect } from 'react'
 import useUser from '../../lib/user'
-import Modal from '../modal'
+import Modal from '../common/modal'
 import CreateAccountForm from './create-account'
 import SignInForm from './sign-in'
 

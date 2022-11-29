@@ -1,7 +1,7 @@
 import { Auction, User } from '@prisma/client'
 import { GetServerSidePropsResult } from 'next'
-import AuctionItem from '../../../components/auction-item'
-import UserHeader from '../../../components/user-header'
+import AuctionItem from '../../../components/auctions/auction-item'
+import UserHeader from '../../../components/users/user-header'
 import { get } from '../../../lib/request'
 
 export async function getServerSideProps ({ params: { id, username } }: { params: { id: string, username: string } }): Promise<GetServerSidePropsResult<{ user: User, auctions: Auction[] }>> {
