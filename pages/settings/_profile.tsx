@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Button, Form, TextField } from '../../components/form'
+import { Button, Form, ImageField, TextField } from '../../components/form'
 import Modal, { ModalProps } from '../../components/modal'
+import { uploadImage } from '../../lib/images'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
 import { User } from '../../shared/types'
@@ -9,14 +10,17 @@ export default function ProfileModal ({ isActive, handleClose }: ModalProps) {
   const { user } = useUser() as { user: User }
   const [username, setUsername] = useState(user.username)
   const [bio, setBio] = useState(user.bio)
-  const [image, setImage] = useState(user.image)
+  const [image, setImage] = useState<File | null>(null)
 
   const handleSubmit = async () => {
     await request({
       method: 'PATCH',
       url: `/api/users/${user.id}`,
-      body: { username, bio, image }
+      body: { username, bio }
     })
+    if (image != null) {
+      await uploadImage(`/api/users/${user.id}/image`, image)
+    }
     handleClose()
   }
 
@@ -27,7 +31,7 @@ export default function ProfileModal ({ isActive, handleClose }: ModalProps) {
         <Form onSubmit={handleSubmit}>
             <TextField title='Username' name='username' type='text' value={username} onChange={e => setUsername(e.target.value)} />
             <TextField title='Bio' name='bio' type='text' value={bio} onChange={e => setBio(e.target.value)} />
-            <TextField title='Image URL' name='image' type='url' value={image} onChange={e => setImage(e.target.value)} />
+            <ImageField onImageChange={setImage} />
             <Button title='Save' className='mt-4' />
         </Form>
     </Modal>

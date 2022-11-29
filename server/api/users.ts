@@ -1,8 +1,11 @@
 import { Prisma, UserRole } from '@prisma/client'
 import { Router } from 'express'
+import fileUpload, { UploadedFile } from 'express-fileupload'
 import normalizeEmail from 'normalize-email'
+import { extname } from 'path'
 import Stripe from 'stripe'
 import { Address, User } from '../../shared/types'
+import s3 from '../s3'
 import prisma from '../prisma'
 import stripe from '../stripe'
 import { hash } from '../util/scrypt'
@@ -76,8 +79,8 @@ router.patch('/:id', withHandler(async function (req, res) {
   if ('bio' in req.body) {
     dbData.bio = req.body.bio
   }
-  if ('image' in req.body) {
-    dbData.image = req.body.image
+  if ('imageUrl' in req.body) {
+    dbData.imageUrl = req.body.imageUrl
   }
   if ('address' in req.body) {
     const { line1, line2, city, state, postalCode, countryCode } = req.body.address as Address
@@ -112,6 +115,24 @@ router.patch('/:id', withHandler(async function (req, res) {
   }
   await req.signIn(user as unknown as User)
   return res.success(user)
+}))
+
+router.put('/:id/image', fileUpload(), withHandler(async (req, res) => {
+  const id = parseInt(req.params.id)
+  if (req.session.user == null || id !== req.session.user.id) {
+    return res.unauthorized()
+  }
+  const image = req.files?.image as UploadedFile
+  const params: AWS.S3.PutObjectRequest = {
+    Bucket: process.env.AWS_S3_BUCKET as string,
+    Key: `users/${encodeURIComponent(req.session.user.username)}${extname(image.name)}`,
+    Body: image.data,
+    ACL: 'public-read'
+  }
+  const result = await s3.upload(params).promise()
+  const user = await prisma.user.update({ where: { id }, data: { imageUrl: result.Location } })
+  await req.signIn(user as unknown as User)
+  return res.success(null)
 }))
 
 router.delete('/:id', withHandler(async function (req, res) {

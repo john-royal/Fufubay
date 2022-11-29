@@ -22,7 +22,7 @@ model User {
   email       String    @unique
   password    String
   bio         String    @default("")
-  image       String    @default("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png")
+  imageUrl    String    @default("https://csc-32200-fufubay-images.s3.amazonaws.com/users/user-placeholder.png")
   address     Json?     @db.JsonB
   paymentCard Json?     @db.JsonB
   createdAt   DateTime  @default(now())
@@ -44,7 +44,7 @@ model Auction {
   title       String
   description String
   slug        String
-  image       String        @default("https://upload.wikimedia.org/wikipedia/commons/3/3f/Placeholder_view_vector.svg")
+  imageUrl    String        @default("https://csc-32200-fufubay-images.s3.amazonaws.com/auctions/auction-placeholder.png")
   status      AuctionStatus @default(PENDING_REVIEW)
   createdAt   DateTime      @default(now())
   startsAt    DateTime?

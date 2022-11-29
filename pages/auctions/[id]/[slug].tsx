@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
+import { makeImageUrl } from '../../../lib/images'
 import request from '../../../lib/request'
 import BidModal from './_bid'
 
@@ -61,7 +62,7 @@ export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
 
       <div className='column is-one-fifth'></div>
       <div className='column is-half'>
-        <Image src={auction.image} alt={auction.title} width={680} height={540} priority />
+        <Image src={auction.imageUrl} alt={auction.title} width={680} height={540} priority loader={makeImageUrl} />
         <h1 className='title'>{auction.title}</h1>
         <p>{auction.description}</p>
         <p>Sold by <Link href='/users/[id]/[slug]' as={`/users/${auction.seller.id}/${auction.seller.username}`} style={{ fontWeight: 'bold' }}>{auction.seller.username}</Link></p>
@@ -107,7 +108,7 @@ function BidItem ({ bid }: { bid: UserBid }) {
   <figure className='media-left'>
     <p className='image is-64x64'>
       <Link {...linkProps}>
-        <Image src={bid.user.image} alt={bid.user.username} width={64} height={64} className='is-rounded' />
+        <Image src={bid.user.imageUrl} alt={bid.user.username} width={64} height={64} className='is-rounded' loader={makeImageUrl} />
       </Link>
     </p>
   </figure>

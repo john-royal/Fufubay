@@ -1,15 +1,16 @@
 import Image from 'next/image'
 import { ReactNode } from 'react'
+import { makeImageUrl } from '../lib/images'
 
 export interface Props {
   username: string
-  image: string
+  imageUrl: string
   bio: string
   createdAt: Date
   children?: ReactNode
 }
 
-export default function UserHeader ({ username, image, bio, createdAt, children }: Props) {
+export default function UserHeader ({ username, imageUrl, bio, createdAt, children }: Props) {
   const joinMonthYear = new Date(createdAt).toLocaleDateString('en-us', { month: 'long', year: 'numeric' })
 
   return (
@@ -18,7 +19,7 @@ export default function UserHeader ({ username, image, bio, createdAt, children 
             <div className='level-left'>
                 <div className='level-item'>
                     <figure className='image is-128x128'>
-                    <Image src={image} alt={username} className='is-rounded' width={128} height={128} priority />
+                    <Image src={imageUrl} alt={username} className='is-rounded' width={128} height={128} priority loader={makeImageUrl} />
                     </figure>
                 </div>
             </div>

@@ -6,8 +6,8 @@ module.exports = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'upload.wikimedia.org',
-        pathname: '/wikipedia/commons/**'
+        hostname: 'fufubaycdn.johnmroyal.com',
+        pathname: '/**'
       }
     ]
   }
