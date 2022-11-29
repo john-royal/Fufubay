@@ -20,4 +20,10 @@ api.use('/auth', auth)
 api.use('/bids', bids)
 api.use('/users', users)
 
+// @ts-expect-error (Express type definitions do not include error handler)
+api.use((err, req, res, next) => {
+  console.error(err)
+  res.internalServerError(err)
+})
+
 export default api

@@ -23,6 +23,7 @@ export function Form ({ children, onSubmit }: PropsWithChildren & {
     setWorking(true)
 
     ;(async () => {
+      setError(null)
       await onSubmit(event)
     })()
       .catch(error => setError(error))

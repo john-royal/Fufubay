@@ -23,6 +23,18 @@ const canEdit = (user: { id: User['id'], role: UserRole } | undefined, auction: 
   }
 }
 
+const normalizeSearchQuery = (input: string): string => {
+  const decoded = decodeURIComponent(input)
+  const parts = decoded.split(/\s+/)
+  if (parts.length > 1) {
+    return parts
+      .map(term => `'${term}'`)
+      .join('&')
+  } else {
+    return decoded
+  }
+}
+
 const router = Router()
 
 router.get('/', withHandler(async (req, res) => {
@@ -31,6 +43,13 @@ router.get('/', withHandler(async (req, res) => {
   }
   if (typeof req.query.sellerId === 'string') {
     where.sellerId = parseInt(req.query.sellerId)
+  }
+  if (typeof req.query.search === 'string') {
+    const search = normalizeSearchQuery(req.query.search)
+    where.OR = {
+      title: { search },
+      description: { search }
+    }
   }
   const auctions = await prisma.auction.findMany({ where, orderBy: { createdAt: 'desc' } })
   return res.success(auctions)
