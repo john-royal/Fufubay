@@ -1,12 +1,12 @@
-import { Auction, Bid, User } from '@prisma/client'
-import { GetServerSidePropsResult } from 'next'
+import { Auction, AuctionStatus, Bid, User } from '@prisma/client'
+import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
+import BidModal from '../../../components/auctions/bid-form'
 import { makeImageUrl } from '../../../lib/images'
 import request from '../../../lib/request'
-import BidModal from '../../../components/auctions/bid-form'
 
 interface SellerAuction extends Auction {
   seller: User
@@ -14,24 +14,6 @@ interface SellerAuction extends Auction {
 
 interface UserBid extends Bid {
   user: User
-}
-
-export async function getServerSideProps ({ params: { id, slug } }: { params: { id: string, slug: string } }): Promise<GetServerSidePropsResult<{ auction: SellerAuction }>> {
-  const auction = await request<SellerAuction>({
-    method: 'GET',
-    url: `http://localhost:8080/api/auctions/${id}`
-  })
-  if (slug !== auction.slug) {
-    return {
-      redirect: {
-        destination: `/auctions/${auction.id}/${auction.slug}`,
-        permanent: true
-      }
-    }
-  }
-  return {
-    props: { auction }
-  }
 }
 
 export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
@@ -57,39 +39,60 @@ export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
   }, [refresh, bidding, mutate])
 
   return (
-    <div className='container mt-5 columns level is-centered is-variable is-1-mobile is-0-tablet is-3-desktop is-8-widescreen is-2-fullhd'>
+    <div className='container p-5 mx-auto'>
       <BidModal isActive={bidding} handleClose={() => setBidding(false)} auctionId={auction.id} />
 
-      <div className='column is-one-fifth'></div>
-      <div className='column is-half'>
-        <Image src={auction.imageUrl} alt={auction.title} width={680} height={540} priority loader={makeImageUrl} />
-        <h1 className='title'>{auction.title}</h1>
-        <p>{auction.description}</p>
-        <p>Sold by <Link href='/users/[id]/[slug]' as={`/users/${auction.seller.id}/${auction.seller.username}`} style={{ fontWeight: 'bold' }}>{auction.seller.username}</Link></p>
-        <hr />
-      </div>
-      <div className='column is-half container box'>
-      <h2 className='title'>Bids</h2>
-        {/* Feel free to rework or move this: */}
-        <div className="notification is-dark level">
-          <div className="level-item">Auction Ends:&nbsp;<strong>{new Date(auction.endsAt as Date).toLocaleDateString()}</strong></div>
-          <div className="level-item">High Bid:&nbsp;<strong>${String(data?.max ?? 0)}</strong></div>
-          <div className="level-item"><strong>{data?.bids.length ?? 0}</strong>&nbsp;Bids</div>
+      {/* TODO: Add some quick options (e.g. accept, deny, cancel) for admins here. */}
+      {auction.status === AuctionStatus.PENDING_REVIEW
+        ? (
+        <div className="notification is-dark">
+          <p>This auction is pending review.</p>
         </div>
-        <div className='rows'>
-          <div className='row'>
-            <ul className='list'>
-              {(data?.bids ?? []).map(bid => (
-                <BidItem bid={bid} key={bid.id} />
-              ))}
-            </ul>
+          )
+        : <></>}
+
+      <main className="column is-two-thirds-desktop">
+        <h1 className="title">{auction.title}</h1>
+        <p className="subtitle">{auction.description}</p>
+        <figure className="image">
+          <Image src={auction.imageUrl} alt={auction.title} width={760} height={540} priority loader={makeImageUrl} />
+        </figure>
+
+        <div className="level mt-1">
+          <div className="level-left mr-1 is-flex-grow-1">
+            <div className="notification is-dark level is-flex-grow-1" style={{ maxHeight: 60 }}>
+              <div className="level-item">
+                <p>
+                  <span className="has-text-grey">Auction Ends: </span>
+                  <strong>{auction.endsAt != null ? new Date(auction.endsAt).toLocaleDateString() : 'N/A'}</strong>
+                </p>
+              </div>
+              <div className="level-item">
+                <p>
+                  <span className="has-text-grey">High Bid: </span>
+                  <strong>${data?.max.toString() ?? '0'}</strong>
+                </p>
+              </div>
+              <div className="level-item">
+                <p>
+                  <span className="has-text-grey">Bids: </span>
+                  <strong>{data?.bids.length.toString() ?? '0'}</strong>
+                </p>
+              </div>
+            </div>
           </div>
-          <br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
-          <div className='container box-link-hover-shadow'>
-            <button className='button is-primary button is-normal is-fullwidth' onClick={() => setBidding(true)}>Bid</button>
+          <div className="level-right ml-1">
+            <button className="button is-primary is-large" onClick={() => setBidding(true)}>Bid</button>
           </div>
         </div>
-      </div>
+
+        <h2 className="title is-3">Bids</h2>
+        <ul className='list'>
+          {(data?.bids ?? []).map(bid => (
+            <BidItem bid={bid} key={bid.id} />
+          ))}
+        </ul>
+      </main>
     </div>
   )
 }
@@ -114,12 +117,33 @@ function BidItem ({ bid }: { bid: UserBid }) {
   </figure>
   <div className='media-content'>
     <div className='content'>
-      <p>
+      <p className='mb-1'>
         <Link {...linkProps} className='has-text-dark has-text-weight-bold'>{bid.user.username}</Link> <small>{new Date(bid.date).toLocaleDateString()}</small>
-        <br />
-        Bid {formatter.format(bid.amount)}
+      </p>
+      <p className="tag is-dark is-medium">
+        <span className="has-text-grey">Bid&nbsp;</span>
+        <strong className="has-text-white">{formatter.format(bid.amount)}</strong>
       </p>
     </div>
   </div>
 </article>)
+}
+
+export async function getServerSideProps ({ params: { id, slug }, req }: { params: { id: string, slug: string } } & GetServerSidePropsContext): Promise<GetServerSidePropsResult<{ auction: SellerAuction }>> {
+  const auction = await request<SellerAuction>({
+    method: 'GET',
+    url: `http://localhost:8080/api/auctions/${id}`,
+    headers: { Cookie: req.headers.cookie }
+  })
+  if (slug !== auction.slug) {
+    return {
+      redirect: {
+        destination: `/auctions/${auction.id}/${auction.slug}`,
+        permanent: true
+      }
+    }
+  }
+  return {
+    props: { auction }
+  }
 }
