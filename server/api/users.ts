@@ -11,6 +11,12 @@ import stripe from '../stripe'
 import { hash } from '../util/scrypt'
 import { withHandler } from './router'
 
+const canEdit = (user: User | undefined, id: User['id']): boolean => {
+  if (user == null) return false
+  else if (user.role === UserRole.SUPER_USER) return true
+  else return user.id === id
+}
+
 const router = Router()
 
 router.get('/', withHandler(async function (req, res) {
@@ -45,7 +51,7 @@ router.get('/:id', withHandler(async function (req, res) {
   if (id == null) {
     return res.badRequest()
   }
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findUniqueOrThrow({
     where: { id }
   })
   if (user == null) {
@@ -56,11 +62,12 @@ router.get('/:id', withHandler(async function (req, res) {
 
 router.patch('/:id', withHandler(async function (req, res) {
   const id = parseInt(req.params.id)
-  if (req.session.user == null || id !== req.session.user.id) {
+  if (!canEdit(req.session.user, id)) {
     return res.unauthorized()
   }
   const dbData: Prisma.UserUpdateInput = {}
   const stripeData: Stripe.CustomerUpdateParams = {}
+  const { stripeId } = await prisma.user.findUniqueOrThrow({ select: { stripeId: true }, where: { id } })
   for (const property of ['id', 'createdAt', 'stripeId', 'auctions', 'bids']) {
     if (property in req.body) {
       return res.badRequest(`Cannot update property "${property}" of user`)
@@ -101,7 +108,7 @@ router.patch('/:id', withHandler(async function (req, res) {
       }
     })()
     const paymentCardsToRemove = (await stripe.paymentMethods.list({
-      customer: req.session.user?.stripeId,
+      customer: stripeId,
       type: 'card'
     }))
       .data.filter(card => card.id !== id)
@@ -109,9 +116,15 @@ router.patch('/:id', withHandler(async function (req, res) {
       await stripe.paymentMethods.detach(card.id)
     }))
   }
+  if ('role' in req.body) {
+    if (req.session.user?.role !== UserRole.SUPER_USER) {
+      return res.unauthorized()
+    }
+    dbData.role = req.body.role as UserRole
+  }
   const user = await prisma.user.update({ data: dbData, where: { id } })
   if (Object.keys(stripeData).length > 0) {
-    await stripe.customers.update(req.session.user.stripeId, stripeData)
+    await stripe.customers.update(stripeId, stripeData)
   }
   await req.signIn(user as unknown as User)
   return res.success(user)
