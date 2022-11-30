@@ -1,12 +1,10 @@
 import { Auction } from '@prisma/client'
-import { withIronSessionSsr } from 'iron-session/next'
 import Router from 'next/router'
 import { FormEvent, useState } from 'react'
 import { Button, Form, ImageField, TextField } from '../../components/common/form'
 import { uploadImage } from '../../lib/images'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
-import { sessionOptions } from '../../shared/session'
 
 export default function CreateAuctionPage () {
   useUser()
@@ -48,13 +46,3 @@ export default function CreateAuctionPage () {
     </div>
   )
 }
-
-export const getServerSideProps = withIronSessionSsr(async ({ req }) => {
-  if (req.session.user == null) {
-    return {
-      redirect: { destination: '/?redirect=/auctions/create', permanent: false }
-    }
-  } else {
-    return { props: {} }
-  }
-}, sessionOptions)

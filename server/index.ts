@@ -6,9 +6,14 @@ import api from './api'
 
 dotenv.config()
 
+const HOSTNAME = 'localhost'
 const PORT = process.env.PORT != null ? parseInt(process.env.PORT) : 3000
 
-const app = next({ dev: process.env.NODE_ENV !== 'production' })
+const app = next({
+  hostname: HOSTNAME,
+  port: PORT,
+  dev: process.env.NODE_ENV !== 'production'
+})
 const handler = app.getRequestHandler()
 
 async function main (): Promise<void> {
@@ -25,12 +30,12 @@ async function main (): Promise<void> {
   await app.prepare()
 
   return await new Promise(resolve => {
-    server.listen(PORT, () => resolve())
+    server.listen(PORT, HOSTNAME, resolve)
   })
 }
 
 main()
-  .then(() => console.log(`Server listening on port ${PORT}`))
+  .then(() => console.log(`Server is running at http://${HOSTNAME}:${PORT}`))
   .catch(err => {
     console.error(err)
     process.exit(1)
