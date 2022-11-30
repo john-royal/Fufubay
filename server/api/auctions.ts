@@ -38,8 +38,11 @@ const normalizeSearchQuery = (input: string): string => {
 const router = Router()
 
 router.get('/', withHandler(async (req, res) => {
-  const where: Prisma.AuctionWhereInput = {
-    status: AuctionStatus.LIVE
+  const where: Prisma.AuctionWhereInput = {}
+  if (typeof req.query.status === 'string') {
+    where.status = req.query.status as AuctionStatus
+  } else {
+    where.status = AuctionStatus.LIVE
   }
   if (typeof req.query.sellerId === 'string') {
     where.sellerId = parseInt(req.query.sellerId)
@@ -66,24 +69,18 @@ router.post('/', withHandler(async (req, res) => {
     imageUrl: req.body.imageUrl,
     seller: {
       connect: { id: req.session.user.id }
-    },
-    // TODO: remove when admin approval is added
-    status: AuctionStatus.LIVE,
-    startsAt: new Date(),
-    endsAt: new Date(Date.now() + (7 * 24 * 60 * 60 * 1000))
+    }
   }
   const auction = await prisma.auction.create({ data })
   return res.created(auction)
 }))
 
 router.get('/:id', withHandler(async (req, res) => {
-  const auction = await prisma.auction.findUnique({
+  const auction = await prisma.auction.findUniqueOrThrow({
     where: { id: parseInt(req.params.id) },
     include: { seller: true }
   })
-  if (auction == null) {
-    return res.notFound()
-  } else if (canView(req.session.user, auction)) {
+  if (canView(req.session.user, auction)) {
     return res.success(auction)
   } else {
     return res.unauthorized()

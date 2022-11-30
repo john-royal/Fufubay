@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import { ironSession } from 'iron-session/express'
 import auctions from './auctions'
 import auth from './auth'
@@ -7,6 +7,7 @@ import helpers from '../helpers'
 import users from './users'
 import { sessionOptions } from '../../shared/session'
 import morgan from 'morgan'
+import { Prisma } from '@prisma/client'
 
 const api = express.Router()
 const session = ironSession(sessionOptions)
@@ -20,9 +21,11 @@ api.use('/auth', auth)
 api.use('/bids', bids)
 api.use('/users', users)
 
-// @ts-expect-error (Express type definitions do not include error handler)
-api.use((err, req, res, next) => {
+api.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err)
+  if (err instanceof Prisma.NotFoundError) {
+    return res.notFound(err.message)
+  }
   res.internalServerError(err)
 })
 

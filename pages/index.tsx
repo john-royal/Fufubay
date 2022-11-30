@@ -6,7 +6,7 @@ import Search from '../components/layout/search'
 import request, { get } from '../lib/request'
 
 export async function getServerSideProps () {
-  const response = await get<Auction[]>('http://localhost:8080/api/auctions')
+  const response = await get<Auction[]>('http://localhost:8080/api/auctions?status=LIVE')
   return {
     props: {
       auctions: response.success ? response.data : []
@@ -18,7 +18,7 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
   const [auctions, setAuctions] = useState<Auction[]>(initialValue)
 
   const handleSearch = async (query: string) => {
-    const url = new URL('/api/auctions', window.location.origin)
+    const url = new URL('/api/auctions?status=LIVE', window.location.origin)
     if (query.length > 0) {
       url.searchParams.set('search', query)
     }

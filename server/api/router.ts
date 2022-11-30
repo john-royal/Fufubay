@@ -10,12 +10,8 @@ export default function router (routes: Route[]): Router {
   const router = Router()
 
   for (const { method, path, handler } of routes) {
-    router[method](path, (req, res) => {
-      handler(req, res).catch(error => {
-        console.error(error)
-
-        res.internalServerError(error)
-      })
+    router[method](path, (req, res, next) => {
+      handler(req, res).catch(err => next(err))
     })
   }
 
