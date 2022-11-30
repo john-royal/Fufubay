@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 import express from 'express'
 import next from 'next'
 import { parse } from 'url' // eslint-disable-line n/no-deprecated-api
-import api from './api'
+import api from './routers'
 
 dotenv.config()
 
