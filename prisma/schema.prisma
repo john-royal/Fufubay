@@ -21,6 +21,7 @@ model User {
   id          Int       @id @default(autoincrement())
   username    String    @unique
   email       String    @unique
+  phone       String?   @unique
   password    String
   bio         String    @default("")
   imageUrl    String    @default("https://csc-32200-fufubay-images.s3.amazonaws.com/users/user-placeholder.png")

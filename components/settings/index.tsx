@@ -5,6 +5,7 @@ import EmailModal from './email'
 import PasswordModal from './password'
 import PaymentModal from './payment'
 import ProfileModal from './profile'
+import PhoneModal from './phone'
 
 export { SettingsItem }
 
@@ -21,6 +22,8 @@ function ModalBody ({ item }: { item: SettingsItem | null }) {
       return <PasswordModal />
     case SettingsItem.EMAIL_ADDRESS:
       return <EmailModal />
+    case SettingsItem.PHONE_NUMBER:
+      return <PhoneModal />
     case SettingsItem.CREDIT_CARD:
       return <PaymentModal />
     case SettingsItem.ADDRESS:

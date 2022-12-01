@@ -28,7 +28,8 @@ export default function SettingsPage () {
     {
       title: 'Contact',
       items: {
-        [SettingsItem.EMAIL_ADDRESS]: user.email
+        [SettingsItem.EMAIL_ADDRESS]: user.email,
+        [SettingsItem.PHONE_NUMBER]: user.phone
       }
     },
     {

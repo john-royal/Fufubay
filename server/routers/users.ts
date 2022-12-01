@@ -10,6 +10,7 @@ import prisma from '../prisma'
 import stripe from '../stripe'
 import { hash } from '../util/scrypt'
 import { withHandler } from './router'
+import { body, validationResult } from 'express-validator'
 
 const canEdit = (user: User | undefined, id: User['id']): boolean => {
   if (user == null) return false
@@ -60,75 +61,84 @@ router.get('/:id', withHandler(async function (req, res) {
   return res.success(user)
 }))
 
-router.patch('/:id', withHandler(async function (req, res) {
-  const id = parseInt(req.params.id)
-  if (!canEdit(req.session.user, id)) {
-    return res.unauthorized()
-  }
-  const dbData: Prisma.UserUpdateInput = {}
-  const stripeData: Stripe.CustomerUpdateParams = {}
-  const { stripeId } = await prisma.user.findUniqueOrThrow({ select: { stripeId: true }, where: { id } })
-  for (const property of ['id', 'createdAt', 'stripeId', 'auctions', 'bids']) {
-    if (property in req.body) {
-      return res.badRequest(`Cannot update property "${property}" of user`)
-    }
-  }
-  if ('username' in req.body) {
-    dbData.username = req.body.username
-  }
-  if ('email' in req.body) {
-    dbData.email = normalizeEmail(req.body.email)
-    stripeData.email = dbData.email
-  }
-  if ('password' in req.body) {
-    dbData.password = await hash(req.body.password)
-  }
-  if ('bio' in req.body) {
-    dbData.bio = req.body.bio
-  }
-  if ('imageUrl' in req.body) {
-    dbData.imageUrl = req.body.imageUrl
-  }
-  if ('address' in req.body) {
-    const { line1, line2, city, state, postalCode, countryCode } = req.body.address as Address
-    dbData.address = { line1, line2, city, state, postalCode, countryCode }
-    stripeData.address = { line1, line2, city, state, postal_code: postalCode, country: countryCode }
-  }
-  if ('paymentCard' in req.body) {
-    const id = req.body.paymentCard.id as string
-    dbData.paymentCard = await (async () => {
-      const paymentMethod = await stripe.paymentMethods.retrieve(id)
-      const { brand, last4, exp_month: expMonth, exp_year: expYear } = paymentMethod.card as Stripe.PaymentMethod.Card
-      return {
-        id: paymentMethod.id,
-        brand: brand[0].toUpperCase() + brand.slice(1),
-        last4,
-        expMonth,
-        expYear
-      }
-    })()
-    const paymentCardsToRemove = (await stripe.paymentMethods.list({
-      customer: stripeId,
-      type: 'card'
-    }))
-      .data.filter(card => card.id !== id)
-    await Promise.all(paymentCardsToRemove.map(async card => {
-      await stripe.paymentMethods.detach(card.id)
-    }))
-  }
-  if ('role' in req.body) {
-    if (req.session.user?.role !== UserRole.SUPER_USER) {
+router.patch('/:id',
+  body('phone').isMobilePhone('en-US').optional(),
+  withHandler(async function (req, res) {
+    validationResult(req).throw()
+
+    const id = parseInt(req.params.id)
+    if (!canEdit(req.session.user, id)) {
       return res.unauthorized()
     }
-    dbData.role = req.body.role as UserRole
-  }
-  const user = await prisma.user.update({ data: dbData, where: { id } })
-  if (Object.keys(stripeData).length > 0) {
-    await stripe.customers.update(stripeId, stripeData)
-  }
-  await req.signIn(user as unknown as User)
-  return res.success(user)
-}))
+    const dbData: Prisma.UserUpdateInput = {}
+    const stripeData: Stripe.CustomerUpdateParams = {}
+    const { stripeId } = await prisma.user.findUniqueOrThrow({ select: { stripeId: true }, where: { id } })
+    for (const property of ['id', 'createdAt', 'stripeId', 'auctions', 'bids']) {
+      if (property in req.body) {
+        return res.badRequest(`Cannot update property "${property}" of user`)
+      }
+    }
+    if ('username' in req.body) {
+      dbData.username = req.body.username
+    }
+    if ('email' in req.body) {
+      dbData.email = normalizeEmail(req.body.email)
+      stripeData.email = dbData.email
+    }
+    if ('phone' in req.body) {
+      dbData.phone = req.body.phone
+      stripeData.phone = req.body.phone
+    }
+    if ('password' in req.body) {
+      dbData.password = await hash(req.body.password)
+    }
+    if ('bio' in req.body) {
+      dbData.bio = req.body.bio
+    }
+    if ('imageUrl' in req.body) {
+      dbData.imageUrl = req.body.imageUrl
+    }
+    if ('address' in req.body) {
+      const { line1, line2, city, state, postalCode, countryCode } = req.body.address as Address
+      dbData.address = { line1, line2, city, state, postalCode, countryCode }
+      stripeData.address = { line1, line2, city, state, postal_code: postalCode, country: countryCode }
+    }
+    if ('paymentCard' in req.body) {
+      const id = req.body.paymentCard.id as string
+      dbData.paymentCard = await (async () => {
+        const paymentMethod = await stripe.paymentMethods.retrieve(id)
+        const { brand, last4, exp_month: expMonth, exp_year: expYear } = paymentMethod.card as Stripe.PaymentMethod.Card
+        return {
+          id: paymentMethod.id,
+          brand: brand[0].toUpperCase() + brand.slice(1),
+          last4,
+          expMonth,
+          expYear
+        }
+      })()
+      const paymentCardsToRemove = (await stripe.paymentMethods.list({
+        customer: stripeId,
+        type: 'card'
+      }))
+        .data.filter(card => card.id !== id)
+      await Promise.all(paymentCardsToRemove.map(async card => {
+        await stripe.paymentMethods.detach(card.id)
+      }))
+    }
+    if ('role' in req.body) {
+      if (req.session.user?.role !== UserRole.SUPER_USER) {
+        return res.unauthorized()
+      }
+      dbData.role = req.body.role as UserRole
+    }
+    const user = await prisma.user.update({ data: dbData, where: { id } })
+    if (Object.keys(stripeData).length > 0) {
+      await stripe.customers.update(stripeId, stripeData)
+    }
+    await req.signIn(user as unknown as User)
+    return res.success(user)
+  })
+)
 
 router.put('/:id/image', fileUpload(), withHandler(async (req, res) => {
   const id = parseInt(req.params.id)
