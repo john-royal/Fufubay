@@ -73,6 +73,35 @@ export default class UsersController {
     return user
   }
 
+  async getSellerAccount (id: User['id']): Promise<Stripe.Response<Stripe.Account>> {
+    if (this.canEdit(id)) {
+      const { stripeAccountId } = await prisma.user.findUniqueOrThrow({ select: { stripeAccountId: true }, where: { id } })
+      return await stripe.accounts.retrieve({ stripeAccount: stripeAccountId })
+    } else {
+      throw new ForbiddenError()
+    }
+  }
+
+  async getSellerLoginLink (id: User['id'], { returnUrl, refreshUrl }: { returnUrl: string, refreshUrl: string }): Promise<{ url: string }> {
+    if (this.canEdit(id)) {
+      const { stripeAccountId } = await prisma.user.findUniqueOrThrow({ select: { stripeAccountId: true }, where: { id } })
+
+      const account = await stripe.accounts.retrieve({ stripeAccount: stripeAccountId })
+      if (account.charges_enabled) {
+        return await stripe.accounts.createLoginLink(stripeAccountId)
+      } else {
+        return await stripe.accountLinks.create({
+          account: stripeAccountId,
+          type: 'account_onboarding',
+          return_url: returnUrl,
+          refresh_url: refreshUrl
+        })
+      }
+    } else {
+      throw new ForbiddenError()
+    }
+  }
+
   async deleteOne (id: User['id']): Promise<void> {
     if (this.canEdit(id)) {
       const customer = await this.getStripeCustomerId(id)

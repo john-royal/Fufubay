@@ -1,7 +1,7 @@
 import { Auction, AuctionStatus, Prisma, User, UserRole } from '@prisma/client'
 import { UploadedFile } from 'express-fileupload'
 import { extname } from 'path'
-import { ForbiddenError, UnauthorizedError, prisma, s3 } from '../common'
+import { ForbiddenError, UnauthorizedError, prisma, s3, stripe } from '../common'
 
 export default class AuctionsController {
   constructor (private readonly user?: User) {}
@@ -83,6 +83,10 @@ export default class AuctionsController {
       throw new UnauthorizedError()
     } else if (this.user.role === UserRole.PENDING_REVIEW) {
       throw new ForbiddenError('Your account hasn’t been approved yet.')
+    }
+    const account = await stripe.accounts.retrieve({ stripeAccount: this.user.stripeAccountId })
+    if (!account.charges_enabled) {
+      throw new ForbiddenError('Your account does not have a payout account set up.')
     }
     const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
     return await prisma.auction.create({

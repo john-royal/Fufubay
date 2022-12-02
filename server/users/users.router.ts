@@ -153,6 +153,42 @@ router.put(
 )
 
 router.get(
+  '/:id/seller',
+  celebrate<{ id: number }>({
+    [Segments.PARAMS]: Joi.object({
+      id: Joi.number().integer()
+    })
+  }),
+  (req, res, next) => {
+    req.users.getSellerAccount(req.params.id)
+      .then(res.success)
+      .catch(next)
+  }
+)
+
+router.get(
+  '/:id/seller-login',
+  celebrate<{ id: number }>({
+    [Segments.PARAMS]: Joi.object({
+      id: Joi.number().integer()
+    })
+  }),
+  (req, res, next) => {
+    const url = (pathname: string): string => {
+      return new URL(pathname, `${req.protocol}://${req.get('host') as string}`).toString()
+    }
+    req.users.getSellerLoginLink(req.params.id, {
+      returnUrl: url('/settings'),
+      refreshUrl: url(req.originalUrl)
+    })
+      .then(loginLink => {
+        res.redirect(loginLink.url)
+      })
+      .catch(next)
+  }
+)
+
+router.get(
   '/:id/setup-intent',
   celebrate<{ id: number }>({
     [Segments.PARAMS]: Joi.object({

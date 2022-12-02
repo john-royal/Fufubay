@@ -28,6 +28,8 @@ function ModalBody ({ item }: { item: SettingsItem | null }) {
       return <PaymentModal />
     case SettingsItem.ADDRESS:
       return <AddressModal />
+    case SettingsItem.PAYOUT_ACCOUNT:
+      return <progress className="progress" max="100">15%</progress>
     case null:
       return <></>
   }
