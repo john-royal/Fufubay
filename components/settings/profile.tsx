@@ -1,9 +1,9 @@
+import { User } from '@prisma/client'
 import { useState } from 'react'
-import { Button, Form, ImageField, TextField } from '../common/form'
 import { uploadImage } from '../../lib/images'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
-import { User } from '../../shared/types'
+import { Button, Form, ImageField, TextField } from '../common/form'
 import { useModal } from '../common/modal'
 
 export default function ProfileModal () {

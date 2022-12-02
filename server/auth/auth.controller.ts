@@ -1,7 +1,5 @@
-import { User } from '../../shared/types'
-import { NotFoundError, UnauthorizedError } from '../errors'
-import prisma from '../prisma'
-import { compare } from '../util/scrypt'
+import { User } from '@prisma/client'
+import { NotFoundError, prisma, scrypt, UnauthorizedError } from '../common'
 
 export default class AuthController {
   async signIn ({ email, password }: { email: string, password: string }): Promise<User> {
@@ -11,10 +9,10 @@ export default class AuthController {
     if (user == null) {
       throw new NotFoundError('We couldn’t find that account.')
     }
-    const isAuthenticated = await compare(password, user.password)
+    const isAuthenticated = await scrypt.compare(password, user.password)
     if (!isAuthenticated) {
       throw new UnauthorizedError('Wrong password.')
     }
-    return user as unknown as User
+    return user
   }
 }

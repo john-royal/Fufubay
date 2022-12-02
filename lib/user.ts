@@ -1,7 +1,7 @@
+import { User } from '@prisma/client'
 import Router from 'next/router'
 import { useEffect } from 'react'
 import useSWR, { KeyedMutator } from 'swr'
-import { User } from '../shared/types'
 import request from './request'
 
 export default function useUser (options: RedirectOptions = { redirect: 'unauthenticated', to: '/' }): { user: User | undefined, setUser: KeyedMutator<User> } {

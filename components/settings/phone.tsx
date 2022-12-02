@@ -1,9 +1,9 @@
+import { User } from '@prisma/client'
 import { useState } from 'react'
-import { Button, Form, TextField } from '../common/form'
-import { useModal } from '../common/modal'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
-import { User } from '../../shared/types'
+import { Button, Form, TextField } from '../common/form'
+import { useModal } from '../common/modal'
 
 export default function PhoneModal () {
   const { user } = useUser() as { user: User }
@@ -25,7 +25,7 @@ export default function PhoneModal () {
       <h1 className='title'>Phone Number</h1>
 
       <Form onSubmit={handleSubmit}>
-        <TextField title='Phone Number' name='phone' type='tel' value={phone} onChange={e => setPhone(e.target.value)} />
+        <TextField title='Phone Number' name='phone' type='tel' value={phone ?? ''} onChange={e => setPhone(e.target.value)} />
         <Button title='Save' className='mt-4' />
       </Form>
     </>

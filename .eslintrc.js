@@ -15,6 +15,12 @@ module.exports = {
       rules: {
         '@typescript-eslint/explicit-function-return-type': 'off'
       }
+    },
+    {
+      files: ['server/**/*.router.ts'],
+      rules: {
+        '@typescript-eslint/no-namespace': 'off'
+      }
     }
   ],
   parserOptions: {

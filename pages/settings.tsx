@@ -29,21 +29,28 @@ export default function SettingsPage () {
       title: 'Contact',
       items: {
         [SettingsItem.EMAIL_ADDRESS]: user.email,
-        [SettingsItem.PHONE_NUMBER]: user.phone
+        [SettingsItem.PHONE_NUMBER]: (() => {
+          const parts = user.phone?.match(/^(\d{3})(\d{3})(\d{4})$/)
+          if (parts == null) return
+          return `(${parts[1]}) ${parts[2]}-${parts[3]}`
+        })()
       }
     },
     {
       title: 'Payments',
       items: {
         [SettingsItem.CREDIT_CARD]: (() => {
-          if (user.paymentCard == null) return
-          const { brand, last4 } = user.paymentCard
-          return `${brand} Ending in ${last4}`
+          const { paymentCardBrand: brand, paymentCardLast4: last4 } = user
+          if (brand != null && last4 != null) {
+            return `${brand[0].toUpperCase() + brand.slice(1)} Ending in ${last4}`
+          }
         })(),
         [SettingsItem.ADDRESS]: (() => {
-          if (user.address == null) return
-          const { line1, line2, city, state, postalCode } = user.address
-          return [line1, line2, city, state, postalCode].filter(item => item !== '').join(', ')
+          const { addressLine1, addressLine2, addressCity, addressState, addressPostalCode } = user
+          const parts = [addressLine1, addressLine2, addressCity, addressState, addressPostalCode].filter(component => component != null)
+          if (parts.length > 0) {
+            return parts.join(', ')
+          }
         })()
       }
     }

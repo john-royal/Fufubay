@@ -1,12 +1,14 @@
 import dotenv from 'dotenv'
 import express from 'express'
+import rateLimit from 'express-rate-limit'
+import morgan from 'morgan'
 import next from 'next'
 import { parse } from 'url' // eslint-disable-line n/no-deprecated-api
-import api from './routers'
+import api from './api'
 
 dotenv.config()
 
-const HOSTNAME = 'localhost'
+const HOSTNAME = process.env.HOSTNAME as string
 const PORT = process.env.PORT != null ? parseInt(process.env.PORT) : 3000
 
 const app = next({
@@ -19,6 +21,11 @@ const handler = app.getRequestHandler()
 async function main (): Promise<void> {
   const server = express()
 
+  server.use(morgan('tiny'))
+  server.use(rateLimit({
+    windowMs: 1000 * 60,
+    max: 100
+  }))
   server.use('/api', api)
   server.use((req, res, next) => {
     const url = parse(req.url, true)

@@ -1,10 +1,9 @@
-import { Bid, UserRole } from '@prisma/client'
-import { User } from '../../shared/types'
-import { BadRequestError, ForbiddenError, UnauthorizedError } from '../errors'
-import prisma from '../prisma'
-import stripe from '../stripe'
+import { Bid, User, UserRole } from '@prisma/client'
+import { BadRequestError, ForbiddenError, prisma, stripe, UnauthorizedError } from '../common'
 
 export default class BidsController {
+  constructor (private readonly user?: User) {}
+
   async findMany ({
     where: { auctionId, userId },
     include: { auction, user }
@@ -19,12 +18,12 @@ export default class BidsController {
     })
   }
 
-  async create ({ amount, auctionId, userId }: { amount: number, auctionId: Bid['auctionId'], userId: Bid['userId'] }, user?: User): Promise<Bid> {
-    if (user == null || user.id !== userId) {
+  async create ({ amount, auctionId, userId }: { amount: number, auctionId: Bid['auctionId'], userId: Bid['userId'] }): Promise<Bid> {
+    if (this.user == null || this.user.id !== userId) {
       throw new UnauthorizedError()
-    } else if (user.paymentCard == null) {
+    } else if (this.user.paymentCardId == null) {
       throw new BadRequestError('Please add a payment card to your account.')
-    } else if (user.role === UserRole.PENDING_REVIEW) {
+    } else if (this.user.role === UserRole.PENDING_REVIEW) {
       throw new ForbiddenError('Your account hasn’t been approved yet.')
     }
     const highBid = await prisma.bid
@@ -36,13 +35,17 @@ export default class BidsController {
     if (amount <= highBid) {
       throw new BadRequestError(`You must bid more than $${highBid}.`)
     }
+    const { seller: { stripeAccountId: transferDestinationId } } = await prisma.auction.findUniqueOrThrow({ select: { seller: { select: { stripeAccountId: true } } }, where: { id: auctionId } })
     const paymentIntent = await stripe.paymentIntents.create({
-      customer: user.stripeId,
+      customer: this.user.stripeCustomerId,
       amount: amount * 1000,
       currency: 'usd',
       capture_method: 'manual',
-      payment_method: user.paymentCard.id,
-      confirm: true
+      payment_method: this.user.paymentCardId,
+      confirm: true,
+      transfer_data: {
+        destination: transferDestinationId
+      }
     })
     return await prisma.bid.create({
       data: {

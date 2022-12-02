@@ -1,4 +1,3 @@
-import { Response as RawResponse } from 'express'
 import { User } from '../shared/types'
 
 declare global {

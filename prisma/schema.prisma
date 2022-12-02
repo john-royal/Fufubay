@@ -18,20 +18,30 @@ enum UserRole {
 }
 
 model User {
-  id          Int       @id @default(autoincrement())
-  username    String    @unique
-  email       String    @unique
-  phone       String?   @unique
-  password    String
-  bio         String    @default("")
-  imageUrl    String    @default("https://csc-32200-fufubay-images.s3.amazonaws.com/users/user-placeholder.png")
-  address     Json?     @db.JsonB
-  paymentCard Json?     @db.JsonB
-  createdAt   DateTime  @default(now())
-  role        UserRole  @default(PENDING_REVIEW)
-  stripeId    String
-  auctions    Auction[]
-  bids        Bid[]
+  id                  Int       @id @default(autoincrement())
+  username            String    @unique
+  email               String    @unique
+  phone               String?   @unique
+  password            String
+  bio                 String    @default("")
+  imageUrl            String    @default("https://csc-32200-fufubay-images.s3.amazonaws.com/users/user-placeholder.png")
+  addressLine1        String?
+  addressLine2        String?
+  addressCity         String?
+  addressState        String?
+  addressPostalCode   String?
+  addressCountry      String?
+  paymentCardId       String?
+  paymentCardLast4    String?
+  paymentCardBrand    String?
+  paymentCardExpMonth Int?
+  paymentCardExpYear  Int?
+  createdAt           DateTime  @default(now())
+  role                UserRole  @default(PENDING_REVIEW)
+  stripeAccountId     String
+  stripeCustomerId    String
+  auctions            Auction[]
+  bids                Bid[]
 }
 
 enum AuctionStatus {

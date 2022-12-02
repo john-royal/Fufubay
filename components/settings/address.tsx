@@ -1,49 +1,46 @@
+import { User } from '@prisma/client'
 import { AddressElement } from '@stripe/react-stripe-js'
 import { StripeAddressElementChangeEvent } from '@stripe/stripe-js'
 import { useState } from 'react'
+import Stripe from 'stripe'
+import request from '../../lib/request'
+import useUser from '../../lib/user'
 import { Button, Form } from '../common/form'
 import { useModal } from '../common/modal'
 import StripeContext from './stripe'
-import request from '../../lib/request'
-import useUser from '../../lib/user'
-import { User } from '../../shared/types'
 
 export default function AddressModal () {
   const { user } = useUser() as { user: User }
   const { handleClose } = useModal()
 
-  const [address, setAddress] = useState({
-    line1: '',
-    line2: '',
-    city: '',
-    state: '',
-    postalCode: '',
-    countryCode: ''
+  const [address, setAddress] = useState<Stripe.Address>({
+    line1: user.addressLine1,
+    line2: user.addressLine2,
+    city: user.addressCity,
+    state: user.addressState,
+    postal_code: user.addressPostalCode,
+    country: user.addressCountry
   })
 
-  const handleChange = (e: StripeAddressElementChangeEvent) => {
-    const { line1, line2, city, state, postal_code: postalCode, country } = e.value.address
-    setAddress({
-      line1,
-      line2: line2 ?? '',
-      city,
-      state,
-      postalCode,
-      countryCode: country
-    })
-  }
+  const handleChange = (e: StripeAddressElementChangeEvent) => setAddress(e.value.address)
 
   const handleSubmit = async () => {
-    const { line1, city, state, postalCode } = address
-    if ([line1, city, state, postalCode].find(item => item == null || item === '') != null) {
+    const body: Partial<User> = {
+      addressLine1: address.line1,
+      addressLine2: address.line2,
+      addressCity: address.city,
+      addressState: address.state,
+      addressPostalCode: address.postal_code,
+      addressCountry: address.country
+    }
+    const requiredProperties: Array<keyof User> = ['addressLine1', 'addressCity', 'addressState', 'addressPostalCode', 'addressCountry']
+    if (requiredProperties.find(property => body[property] == null || body[property] === '') != null) {
       throw new Error('Your address is incomplete.')
     }
     await request({
       method: 'PATCH',
       url: `/api/users/${user.id}`,
-      body: {
-        address
-      }
+      body
     })
     handleClose()
   }

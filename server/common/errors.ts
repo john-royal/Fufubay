@@ -1,11 +1,11 @@
 export class AppError extends Error {
   constructor (
-    public readonly type: string,
-    public readonly statusCode: number,
-    public readonly message: string,
-    public readonly underlyingError?: Error
+    public name: string,
+    public status: number,
+    public message: string
   ) {
-    super(type)
+    super(message)
+    Object.defineProperty(this, 'message', { enumerable: true })
   }
 }
 
@@ -30,5 +30,11 @@ export class ForbiddenError extends AppError {
 export class NotFoundError extends AppError {
   constructor (message: string = 'Not Found') {
     super('Not Found', 404, message)
+  }
+}
+
+export class InternalServerError extends AppError {
+  constructor (message: string = 'Internal Server Error') {
+    super('Internal Server Error', 500, message)
   }
 }

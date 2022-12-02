@@ -1,12 +1,11 @@
-import { Auction, AuctionStatus, Prisma, UserRole } from '@prisma/client'
+import { Auction, AuctionStatus, Prisma, User, UserRole } from '@prisma/client'
 import { UploadedFile } from 'express-fileupload'
 import { extname } from 'path'
-import { User } from '../../shared/types'
-import { ForbiddenError, UnauthorizedError } from '../errors'
-import prisma from '../prisma'
-import s3 from '../s3'
+import { ForbiddenError, UnauthorizedError, prisma, s3 } from '../common'
 
 export default class AuctionsController {
+  constructor (private readonly user?: User) {}
+
   async findMany ({ where: { status, sellerId, search } }: { where: { status?: AuctionStatus, sellerId?: Auction['sellerId'], search?: string } }): Promise<Auction[]> {
     const where: Prisma.AuctionWhereInput = {
       status: status ?? AuctionStatus.LIVE,
@@ -22,24 +21,24 @@ export default class AuctionsController {
     return await prisma.auction.findMany({ where, orderBy: { createdAt: 'desc' } })
   }
 
-  async findOne (id: Auction['id'], user?: User): Promise<Auction> {
+  async findOne (id: Auction['id']): Promise<Auction> {
     const auction = await prisma.auction.findUniqueOrThrow({
       where: { id },
       include: { seller: true }
     })
-    if (this.canView(user, auction)) {
+    if (this.canView(auction)) {
       return auction
     } else {
       throw new ForbiddenError()
     }
   }
 
-  async updateOne (id: Auction['id'], data: Partial<Auction>, user?: User): Promise<Auction> {
+  async updateOne (id: Auction['id'], data: Partial<Auction>): Promise<Auction> {
     const { sellerId } = await prisma.auction.findUniqueOrThrow({
       select: { sellerId: true },
       where: { id }
     })
-    if (this.canEdit(user, { sellerId })) {
+    if (this.canEdit({ sellerId }) && (data.status == null || this.user?.role === UserRole.SUPER_USER)) {
       return await prisma.auction.update({
         where: { id },
         data
@@ -49,24 +48,24 @@ export default class AuctionsController {
     }
   }
 
-  async deleteOne (id: Auction['id'], user?: User): Promise<void> {
+  async deleteOne (id: Auction['id']): Promise<void> {
     const { sellerId } = await prisma.auction.findUniqueOrThrow({
       select: { sellerId: true },
       where: { id }
     })
-    if (this.canEdit(user, { sellerId })) {
+    if (this.canEdit({ sellerId })) {
       await prisma.auction.delete({ where: { id } })
     } else {
       throw new ForbiddenError()
     }
   }
 
-  async putImage (id: Auction['id'], image: UploadedFile, user?: User): Promise<Auction> {
+  async putImage (id: Auction['id'], image: UploadedFile): Promise<Auction> {
     const { slug, sellerId } = await prisma.auction.findUniqueOrThrow({
       select: { slug: true, sellerId: true },
       where: { id }
     })
-    if (this.canEdit(user, { sellerId })) {
+    if (!this.canEdit({ sellerId })) {
       throw new ForbiddenError()
     }
     const params: AWS.S3.PutObjectRequest = {
@@ -79,10 +78,10 @@ export default class AuctionsController {
     return await prisma.auction.update({ where: { id }, data: { imageUrl: result.Location } })
   }
 
-  async create ({ title, description, sellerId, imageUrl }: { title: string, description: string, sellerId: Auction['sellerId'], imageUrl: string }, user?: User): Promise<Auction> {
-    if (user == null || user.id !== sellerId) {
+  async create ({ title, description, sellerId }: { title: string, description: string, sellerId: number }): Promise<Auction> {
+    if (this.user == null || this.user.id !== sellerId) {
       throw new UnauthorizedError()
-    } else if (user.role === UserRole.PENDING_REVIEW) {
+    } else if (this.user.role === UserRole.PENDING_REVIEW) {
       throw new ForbiddenError('Your account hasn’t been approved yet.')
     }
     const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
@@ -91,25 +90,24 @@ export default class AuctionsController {
         title,
         description,
         slug,
-        imageUrl,
         seller: { connect: { id: sellerId } }
       }
     })
   }
 
-  private canView (user: User | undefined, auction: Auction): boolean {
+  private canView (auction: Auction): boolean {
     const isPublic = auction.status === AuctionStatus.LIVE || auction.status === AuctionStatus.SOLD
-    const isAuthorized = user?.role === UserRole.SUPER_USER || user?.id === auction?.sellerId
+    const isAuthorized = this.user?.role === UserRole.SUPER_USER || this.user?.id === auction?.sellerId
     return isPublic || isAuthorized
   }
 
-  private canEdit (user: { id: User['id'], role: UserRole } | undefined, auction: { sellerId: Auction['sellerId'] }): boolean {
-    if (user == null || user.role === UserRole.PENDING_REVIEW) {
+  private canEdit (auction: { sellerId: Auction['sellerId'] }): boolean {
+    if (this.user == null || this.user.role === UserRole.PENDING_REVIEW) {
       return false
-    } else if (user.role === UserRole.SUPER_USER) {
+    } else if (this.user.role === UserRole.SUPER_USER) {
       return true
     } else {
-      return user.id === auction.sellerId
+      return this.user.id === auction.sellerId
     }
   }
 

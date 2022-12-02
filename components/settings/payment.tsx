@@ -26,7 +26,7 @@ function PaymentForm () {
       method: 'PATCH',
       url: `/api/users/${user.id}`,
       body: {
-        paymentCard: { id: result.setupIntent.payment_method }
+        paymentCardId: result.setupIntent.payment_method
       }
     })
     handleClose()

@@ -1,17 +1,19 @@
-import { Request, Router } from 'express'
-import { body, validationResult } from 'express-validator'
-import AuthController from '../controllers/auth.controller'
+import { celebrate, Joi, Segments } from 'celebrate'
+import { Router } from 'express'
+import AuthController from './auth.controller'
 
-const controller = new AuthController()
 const router = Router()
+const controller = new AuthController()
 
 router.post(
   '/sign-in',
-  body('email').isEmail(),
-  body('password'),
-  function (req: Request<{}, { email: string, password: string }>, res, next) {
-    validationResult(req).throw()
-
+  celebrate<{}, {}, { email: string, password: string }>({
+    [Segments.BODY]: Joi.object({
+      email: Joi.string().email().required(),
+      password: Joi.string().required()
+    })
+  }),
+  function (req, res, next) {
     controller.signIn({ email: req.body.email, password: req.body.password })
       .then(async user => {
         await req.signIn(user)

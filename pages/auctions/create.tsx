@@ -7,7 +7,7 @@ import request from '../../lib/request'
 import useUser from '../../lib/user'
 
 export default function CreateAuctionPage () {
-  useUser()
+  const { user } = useUser()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [image, setImage] = useState<File | null>(null)
@@ -26,7 +26,8 @@ export default function CreateAuctionPage () {
       url: '/api/auctions',
       body: {
         title,
-        description
+        description,
+        sellerId: user?.id as number
       }
     })
     await uploadImage(`/api/auctions/${auction.id}/image`, image)

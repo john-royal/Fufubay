@@ -1,9 +1,9 @@
+import { User } from '@prisma/client'
 import { useState } from 'react'
-import { Button, Form, TextField } from '../common/form'
-import { useModal } from '../common/modal'
 import request from '../../lib/request'
 import useUser from '../../lib/user'
-import { User } from '../../shared/types'
+import { Button, Form, TextField } from '../common/form'
+import { useModal } from '../common/modal'
 
 export default function EmailModal () {
   const { user } = useUser() as { user: User }
