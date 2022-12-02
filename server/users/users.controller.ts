@@ -1,8 +1,14 @@
 import { Prisma, User, UserRole } from '@prisma/client'
 import { UploadedFile } from 'express-fileupload'
+import LRUCache from 'lru-cache'
 import { extname } from 'path'
 import Stripe from 'stripe'
 import { ForbiddenError, prisma, s3, scrypt, stripe } from '../common'
+
+const stripeAccounts = new LRUCache<User['id'], Stripe.Account>({
+  max: 25,
+  ttl: 60 * 1000
+})
 
 export default class UsersController {
   constructor (public readonly user?: User) {}
@@ -73,10 +79,9 @@ export default class UsersController {
     return user
   }
 
-  async getSellerAccount (id: User['id']): Promise<Stripe.Response<Stripe.Account>> {
+  async getSellerAccount (id: User['id']): Promise<Stripe.Account> {
     if (this.canEdit(id)) {
-      const { stripeAccountId } = await prisma.user.findUniqueOrThrow({ select: { stripeAccountId: true }, where: { id } })
-      return await stripe.accounts.retrieve({ stripeAccount: stripeAccountId })
+      return await this.fetchStripeAccount(id)
     } else {
       throw new ForbiddenError()
     }
@@ -84,14 +89,12 @@ export default class UsersController {
 
   async getSellerLoginLink (id: User['id'], { returnUrl, refreshUrl }: { returnUrl: string, refreshUrl: string }): Promise<{ url: string }> {
     if (this.canEdit(id)) {
-      const { stripeAccountId } = await prisma.user.findUniqueOrThrow({ select: { stripeAccountId: true }, where: { id } })
-
-      const account = await stripe.accounts.retrieve({ stripeAccount: stripeAccountId })
+      const account = await this.fetchStripeAccount(id)
       if (account.charges_enabled) {
-        return await stripe.accounts.createLoginLink(stripeAccountId)
+        return await stripe.accounts.createLoginLink(account.id)
       } else {
         return await stripe.accountLinks.create({
-          account: stripeAccountId,
+          account: account.id,
           type: 'account_onboarding',
           return_url: returnUrl,
           refresh_url: refreshUrl
@@ -177,5 +180,14 @@ export default class UsersController {
   private async getStripeCustomerId (id: User['id']): Promise<User['stripeCustomerId']> {
     const { stripeCustomerId: customer } = await prisma.user.findUniqueOrThrow({ select: { stripeCustomerId: true }, where: { id } })
     return customer
+  }
+
+  async fetchStripeAccount (userId: User['id']): Promise<Stripe.Account> {
+    const cached = stripeAccounts.get(userId)
+    if (cached != null) return cached
+    const { stripeAccountId } = await prisma.user.findUniqueOrThrow({ select: { stripeAccountId: true }, where: { id: userId } })
+    const account = await stripe.accounts.retrieve({ stripeAccount: stripeAccountId })
+    stripeAccounts.set(userId, account)
+    return account
   }
 }
