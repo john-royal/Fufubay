@@ -33,7 +33,7 @@ export default async function request<T> (options: RequestOptions): Promise<T> {
   })
   const json = await response.json() as APIResponse<T>
   if (json.success) return json.data
-  else throw new Error(json.error.message)
+  else throw new Error(json.error.message ?? 'Something went wrong.')
 }
 
 export async function get<T> (url: string): Promise<APIResponse<T>> {

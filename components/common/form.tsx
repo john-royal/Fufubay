@@ -8,15 +8,6 @@ export function Form ({ children, onSubmit }: PropsWithChildren & {
   const [working, setWorking] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const ErrorNotification = () => {
-    if (error == null) return <></>
-    return (
-        <div className='notification is-danger'>
-            <strong>{error.toString()}</strong> Please try again.
-        </div>
-    )
-  }
-
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
@@ -32,7 +23,9 @@ export function Form ({ children, onSubmit }: PropsWithChildren & {
 
   return (
     <div className='form'>
-        <ErrorNotification />
+        <div className={`notification is-danger${error != null ? '' : ' is-hidden'}`}>
+            <strong>{error?.toString().replaceAll(/\w+:\s/g, '').replace(/\stry again.+/i, '')}</strong> Please try again.
+        </div>
         <form onSubmit={handleSubmit}>
         <ButtonContext.Provider value={working}>
             {children}

@@ -65,9 +65,9 @@ export default class UsersController {
       data.paymentCardExpMonth = card?.exp_month
       data.paymentCardExpYear = card?.exp_year
     }
-    // if (data.role != null && !this.isSuperUser) {
-    //   throw new ForbiddenError()
-    // }
+    if (data.role != null && !this.isSuperUser) {
+      throw new ForbiddenError()
+    }
     const user = await prisma.user.update({ where: { id }, data })
     await this.updateStripe(id, data)
     return user

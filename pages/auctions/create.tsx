@@ -35,7 +35,7 @@ export default function CreateAuctionPage () {
   }
 
   return (
-    <div className='container mt-5'>
+    <div className='container p-5'>
       <h1 className='title'>New Auction</h1>
 
       <Form onSubmit={handleSubmit}>

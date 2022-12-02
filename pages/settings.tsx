@@ -58,31 +58,29 @@ export default function SettingsPage () {
 
   return (
     <div className="container mt-5">
-        <SettingsModal item={item} setItem={setItem} />
-        <UserHeader {...user}>
-            <button className='button is-small' onClick={() => setItem(SettingsItem.PROFILE)}>Edit Profile</button>
-        </UserHeader>
-        {sections.map(({ title, items }) => (
-            <div key={title}>
-                <hr />
-                <section className='m-5'>
-                    <h2 className='title is-4'>{title}</h2>
-                    {Object.entries(items).map(([item, value]) => (
-                        <div key={item} className='level'>
-                            <div className='level-left'>
-                                <div>
-                                    <h3 className='heading has-text-grey'>{item}</h3>
-                                    <p>{value ?? 'Not Set'}</p>
-                                </div>
-                            </div>
-                            <div className='level-right'>
-                                <button className='button is-small' onClick={() => setItem(item as SettingsItem)}>Edit {item}</button>
-                            </div>
-                        </div>
-                    ))}
-                </section>
+      <SettingsModal item={item} setItem={setItem} />
+      <UserHeader {...user}>
+        <button className='button is-small' onClick={() => setItem(SettingsItem.PROFILE)}>Edit Profile</button>
+      </UserHeader>
+      {sections.map(({ title, items }) => (
+        <div key={title} className='m-5'>
+          <hr />
+          <h2 className='title is-4'>{title}</h2>
+          {Object.entries(items).map(([item, value]) => (
+            <div key={item} className='level is-mobile'>
+              <div className='level-left' style={{ maxWidth: '50%' }}>
+                <div>
+                  <h3 className='heading has-text-grey'>{item}</h3>
+                  <p>{value ?? 'Not Set'}</p>
+                </div>
+              </div>
+              <div className='level-right'>
+                <button className='button is-small' onClick={() => setItem(item as SettingsItem)}>Edit {item}</button>
+              </div>
             </div>
-        ))}
+          ))}
+        </div>
+      ))}
     </div>
   )
 }
