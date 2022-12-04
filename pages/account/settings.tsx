@@ -2,19 +2,20 @@ import Router from 'next/router'
 import { useEffect, useState } from 'react'
 import Stripe from 'stripe'
 import useSWR from 'swr'
-import SettingsModal, { SettingsItem } from '../components/settings'
-import UserHeader from '../components/users/user-header'
-import request from '../lib/request'
-import useUser from '../lib/user'
+import SettingsModal, { SettingsItem } from '../../components/settings'
+import UserHeader from '../../components/users/user-header'
+import request from '../../lib/request'
+import useUser from '../../lib/user'
+import AccountLayout from './_layout'
 
 interface SectionOptions {
   title: string
-  items: { [item in SettingsItem]?: string | null | undefined }
+  items: { [item in SettingsItem]?: string | undefined }
 }
 
-const formatAccountName = ({ brand, last4 }: { brand: string | null, last4: string }): string => {
-  brand = brand ?? 'Account'
-  return `${brand[0].toUpperCase() + brand.slice(1)} Ending in ${last4}`
+const formatAccountName = (brand: string = 'Account', last4: string): string => {
+  brand = brand[0].toUpperCase() + brand.slice(1)
+  return `${brand} Ending in ${last4}`
 }
 
 export default function SettingsPage () {
@@ -59,20 +60,14 @@ export default function SettingsPage () {
         [SettingsItem.CREDIT_CARD]: (() => {
           const { paymentCardBrand: brand, paymentCardLast4: last4 } = user
           if (brand != null && last4 != null) {
-            return formatAccountName({ brand, last4 })
+            return formatAccountName(brand, last4)
           }
         })(),
         [SettingsItem.PAYOUT_ACCOUNT]: (() => {
           if (seller == null || !seller.charges_enabled || seller.external_accounts?.data.length === 0) return
           const account = seller.external_accounts?.data[0] as Stripe.BankAccount | Stripe.Card
-          switch (account.object) {
-            case 'bank_account': {
-              return formatAccountName({ brand: account.bank_name, last4: account.last4 })
-            }
-            case 'card': {
-              return formatAccountName(account)
-            }
-          }
+          const brand = (account as Stripe.Card)?.brand ?? (account as Stripe.BankAccount)?.bank_name ?? 'Account'
+          return formatAccountName(brand, account.last4)
         })()
       }
     },
@@ -91,7 +86,7 @@ export default function SettingsPage () {
   ]
 
   return (
-    <div className="container mx-auto p-5">
+    <AccountLayout>
       <SettingsModal item={item} setItem={setItem} />
       <div className={`notification level is-dark ${seller?.charges_enabled ?? true ? 'is-hidden' : ''}`}>
         <div className="level-left">
@@ -111,21 +106,25 @@ export default function SettingsPage () {
         <div key={title}>
           <hr />
           <h2 className='title is-4'>{title}</h2>
-          {Object.entries(items).map(([item, value]) => (
-            <div key={item} className='level is-mobile'>
-              <div className='level-left' style={{ maxWidth: '50%' }}>
-                <div>
-                  <h3 className='heading has-text-grey'>{item}</h3>
-                  <p>{value ?? 'Not Set'}</p>
-                </div>
-              </div>
-              <div className='level-right'>
-                <button className='button is-small' onClick={() => setItem(item as SettingsItem)}>Edit {item}</button>
-              </div>
-            </div>
-          ))}
+          {Object.entries(items).map(([item, value]) => <SectionItem key={item} item={item} value={value} onEdit={() => setItem(item as SettingsItem)} />)}
         </div>
       ))}
+    </AccountLayout>
+  )
+}
+
+function SectionItem ({ item, value, onEdit }: { item: string, value: string | undefined, onEdit: () => void }) {
+  return (
+    <div key={item} className='level is-mobile'>
+      <div className='level-left' style={{ maxWidth: '50%' }}>
+        <div>
+          <h3 className='heading has-text-grey'>{item}</h3>
+          <p>{value ?? 'N/A'}</p>
+        </div>
+      </div>
+      <div className='level-right'>
+        <button className='button is-small' onClick={onEdit}>Edit {item}</button>
+      </div>
     </div>
   )
 }

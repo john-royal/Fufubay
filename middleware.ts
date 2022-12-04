@@ -14,5 +14,5 @@ export const middleware: NextMiddleware = async function (req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin', '/auctions/create', '/settings']
+  matcher: ['/account/:path*', '/admin', '/sell']
 }

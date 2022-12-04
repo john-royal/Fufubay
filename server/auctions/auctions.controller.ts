@@ -6,9 +6,9 @@ import { ForbiddenError, UnauthorizedError, prisma, s3, stripe } from '../common
 export default class AuctionsController {
   constructor (private readonly user?: User) {}
 
-  async findMany ({ where: { status, sellerId, search } }: { where: { status?: AuctionStatus, sellerId?: Auction['sellerId'], search?: string } }): Promise<Auction[]> {
+  async findMany ({ where: { status, sellerId, search } }: { where: { status?: AuctionStatus[], sellerId?: Auction['sellerId'], search?: string } }): Promise<Auction[]> {
     const where: Prisma.AuctionWhereInput = {
-      status: status ?? AuctionStatus.LIVE,
+      status: status != null ? { in: status } : AuctionStatus.LIVE,
       sellerId
     }
     if (search != null) {
@@ -21,10 +21,18 @@ export default class AuctionsController {
     return await prisma.auction.findMany({ where, orderBy: { createdAt: 'desc' } })
   }
 
-  async findOne (id: Auction['id']): Promise<Auction> {
+  async findOne (id: Auction['id'], include: { bids: boolean, seller: boolean }): Promise<Auction> {
     const auction = await prisma.auction.findUniqueOrThrow({
       where: { id },
-      include: { seller: true }
+      include: {
+        bids: include.bids
+          ? {
+              include: { user: true },
+              orderBy: { date: 'desc' }
+            }
+          : false,
+        seller: include.seller
+      }
     })
     if (this.canView(auction)) {
       return auction

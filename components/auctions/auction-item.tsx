@@ -1,31 +1,19 @@
 import { Auction } from '@prisma/client'
 import Image from 'next/image'
-import Link from 'next/link'
 import { makeImageUrl } from '../../lib/images'
+import AuctionLink from './auction-link'
 
 export default function AuctionItem ({ auction }: { auction: Auction }) {
-  const linkProps = {
-    href: '/auctions/[id]/[slug]',
-    as: `/auctions/${auction.id}/${auction.slug}`
-  }
   return (
-    <article className='media'>
-        <figure className='media-left'>
-            <Link {...linkProps}>
-                <p className='image is-128x128'>
-                    <Image src={auction.imageUrl} alt={auction.title} width={128} height={128} loader={makeImageUrl} />
-                </p>
-            </Link>
-        </figure>
-        <div className='media-content'>
-            <Link {...linkProps}>
-                <div className='content'>
-                    <strong>{auction.title}</strong>
-                    <br />
-                    {auction.description}
-                </div>
-            </Link>
-        </div>
-    </article>
+    <AuctionLink auction={auction}>
+        <article className='tile is-child'>
+            <figure className="image mb-3">
+                <Image src={auction.imageUrl} alt={auction.title} width={320} height={240} style={{ width: '320px', height: '240px' }} loader={makeImageUrl} />
+            </figure>
+            <p className="title has-text-weight-bold is-6 mb-1">{auction.title}</p>
+            <p className="is-size-7 has-text-dark">{auction.description}</p>
+            <p className="is-size-7 has-text-grey">Ends {new Date(auction.endsAt ?? 0).toLocaleDateString()}</p>
+        </article>
+    </AuctionLink>
   )
 }

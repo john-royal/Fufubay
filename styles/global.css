@@ -1,4 +1,4 @@
-.image img {
+.image img, img {
     object-fit: cover;
     width: -webkit-fill-available;
     height: -webkit-fill-available;

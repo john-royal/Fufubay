@@ -33,6 +33,12 @@ export class NotFoundError extends AppError {
   }
 }
 
+export class TooManyRequestsError extends AppError {
+  constructor (message: string = 'Too Many Requests') {
+    super('Too Many Requests', 429, message)
+  }
+}
+
 export class InternalServerError extends AppError {
   constructor (message: string = 'Internal Server Error') {
     super('Internal Server Error', 500, message)

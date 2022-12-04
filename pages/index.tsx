@@ -3,19 +3,40 @@ import { useState } from 'react'
 import AuctionItem from '../components/auctions/auction-item'
 import Categories from '../components/auctions/categories'
 import Search from '../components/layout/search'
-import request, { get } from '../lib/request'
+import request from '../lib/request'
 
 export async function getServerSideProps () {
-  const response = await get<Auction[]>('http://localhost:8080/api/auctions?status=LIVE')
+  const auctions = await request<Auction[]>({
+    method: 'GET',
+    url: 'http://localhost:8080/api/auctions?status=LIVE'
+  })
   return {
-    props: {
-      auctions: response.success ? response.data : []
-    }
+    props: { auctions }
   }
 }
 
+function batch<T> (items: T[], size: number): T[][] {
+  const matrix: T[][] = []
+  let i = 0
+  let row = 0
+  let col = 0
+  while (i < items.length) {
+    if (!Array.isArray(matrix[row])) {
+      matrix.push([])
+    }
+    matrix[row][col] = items[i]
+    col++
+    if (col === size) {
+      row++
+      col = 0
+    }
+    i++
+  }
+  return matrix
+}
+
 export default function Home ({ auctions: initialValue }: { auctions: Auction[] }) {
-  const [auctions, setAuctions] = useState<Auction[]>(initialValue)
+  const [auctions, setAuctions] = useState<Auction[][]>(batch(initialValue, 4))
 
   const handleSearch = async (query: string) => {
     const url = new URL('/api/auctions?status=LIVE', window.location.origin)
@@ -26,18 +47,24 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
       method: 'GET',
       url: url.toString()
     })
-    setAuctions(result)
+    setAuctions(batch(result, 4))
   }
 
   return (
     <>
       <Search onSubmit={handleSearch} />
-      <main className='container m-5'>
+      <main className='container mx-auto'>
         <Categories />
         <br/>
-        {auctions.map(auction =>
-          <AuctionItem key={auction.id} auction={auction} />
-        )}
+        {auctions.map((row, i) => (
+          <div key={i} className="columns mx-auto">
+            {row.map(auction => (
+              <div key={auction.id} className="column is-3 is-fullwidth-mobile mx-auto">
+                <AuctionItem auction={auction} />
+              </div>
+            ))}
+          </div>
+        ))}
       </main>
     </>
   )

@@ -14,9 +14,9 @@ export default function UserHeader ({ username, imageUrl, bio, createdAt, childr
   const joinMonthYear = new Date(createdAt).toLocaleDateString('en-us', { month: 'long', year: 'numeric' })
 
   return (
-    <header className='m-5'>
+    <header>
         <div className='level'>
-            <div className='level-left'>
+            <div className='level-left m-5'>
                 <div className='level-item'>
                     <figure className='image is-128x128'>
                     <Image src={imageUrl} alt={username} className='is-rounded' width={128} height={128} priority loader={makeImageUrl} />

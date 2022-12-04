@@ -1,6 +1,6 @@
 import { Auction, User } from '@prisma/client'
 import { GetServerSidePropsResult } from 'next'
-import AuctionItem from '../../../components/auctions/auction-item'
+import AuctionRow from '../../../components/auctions/auction-row'
 import UserHeader from '../../../components/users/user-header'
 import { get } from '../../../lib/request'
 
@@ -36,7 +36,7 @@ export default function UserPage ({ user, auctions }: { user: User, auctions: Au
         <section>
           <h2 className='title'>Auctions</h2>
           {auctions.map(auction =>
-            <AuctionItem key={auction.id} auction={auction} />
+            <AuctionRow key={auction.id} auction={auction} />
           )}
         </section>
       </div>

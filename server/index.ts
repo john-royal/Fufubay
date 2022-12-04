@@ -5,6 +5,7 @@ import morgan from 'morgan'
 import next from 'next'
 import { parse } from 'url' // eslint-disable-line n/no-deprecated-api
 import api from './api'
+import { TooManyRequestsError } from './common'
 
 dotenv.config()
 
@@ -23,8 +24,11 @@ async function main (): Promise<void> {
 
   server.use(morgan('tiny'))
   server.use(rateLimit({
-    windowMs: 1000 * 60,
-    max: 100
+    windowMs: 1000 * 30,
+    max: 50,
+    handler (req, res, next, options) {
+      next(new TooManyRequestsError(`Too many requests. Please try again in ${options.windowMs / 1000} seconds.`))
+    }
   }))
   server.use('/api', api)
   server.use((req, res, next) => {

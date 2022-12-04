@@ -21,10 +21,13 @@ router.use((req, res, next) => {
 
 router.get(
   '/',
-  celebrate<{}, {}, {}, { search: string, status: AuctionStatus, sellerId: Auction['sellerId'] }>({
+  celebrate<{}, {}, {}, { search: string, status: AuctionStatus[], sellerId: Auction['sellerId'] }>({
     [Segments.QUERY]: Joi.object({
       search: Joi.string(),
-      status: Joi.string().valid(...Object.values(AuctionStatus)),
+      status: Joi.string().custom(value => {
+        const result = Joi.array().allow(...Object.values(AuctionStatus)).validate(value.split(','))
+        return result.value ?? result.error
+      }),
       sellerId: Joi.number().integer()
     })
   }),
@@ -63,13 +66,22 @@ router.post(
 
 router.get(
   '/:id',
-  celebrate<{ id: number }>({
+  celebrate<{ id: number }, {}, {}, { include: Array<'bids' | 'seller'> }>({
     [Segments.PARAMS]: Joi.object({
       id: Joi.number().integer()
+    }),
+    [Segments.QUERY]: Joi.object({
+      include: Joi.string().custom(value => {
+        const result = Joi.array().allow('bids', 'seller').validate(value.split(','))
+        return result.value ?? result.error
+      })
     })
   }),
   (req, res, next) => {
-    req.auctions.findOne(req.params.id)
+    req.auctions.findOne(req.params.id, {
+      bids: req.query.include?.includes('bids') ?? false,
+      seller: req.query.include?.includes('seller') ?? false
+    })
       .then(res.success)
       .catch(next)
   }
