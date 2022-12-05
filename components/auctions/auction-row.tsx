@@ -33,21 +33,26 @@ export default function AuctionRow ({ auction, children }: { auction: Auction, c
 }
 
 function StatusTag ({ auction }: { auction: Auction }) {
-  const className = (...classes: string[]): string => ['tag', 'has-text-weight-semibold', 'is-uppercase', ...classes].join(' ')
+  const className = (...classes: string[]): string => ['tag', 'has-text-weight-semibold', ...classes].join(' ')
 
   switch (auction.status) {
     case AuctionStatus.CANCELED:
       return <span className={className('is-danger')}>Canceled</span>
     case AuctionStatus.LIVE:
       return (
-        <>
+        <div className='tags'>
             <span className={className('is-primary')}>Live</span>
             <span className='tag is-white has-text-dark'>Ends {new Date(auction.endsAt ?? 0).toLocaleDateString()}</span>
-        </>
+        </div>
       )
     case AuctionStatus.PENDING_REVIEW:
       return <span className={className()}>Pending Review</span>
     case AuctionStatus.SOLD:
-      return <span className={className('is-success')}>Sold</span>
+      return (
+        <div className='tags'>
+          <span className={className('is-success')}>Sold</span>
+          <span className='tag is-white has-text-dark'>{new Date(auction.endsAt ?? 0).toLocaleDateString()}</span>
+        </div>
+      )
   }
 }

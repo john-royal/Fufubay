@@ -1,4 +1,4 @@
-import { Bid, User } from '@prisma/client'
+import { Bid, BidStatus, User } from '@prisma/client'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ReactNode } from 'react'
@@ -30,10 +30,17 @@ export function BidItem ({ bid, children }: { bid: UserBid, children?: ReactNode
                 <p className='mb-1'>
                     <Link {...linkProps} className='has-text-dark has-text-weight-bold'>{bid.user.username}</Link> <small>{new Date(bid.date).toLocaleDateString()}</small>
                 </p>
-                <p className='tag is-dark is-medium'>
-                    <span className='has-text-grey'>Bid&nbsp;</span>
-                    <strong className='has-text-white'>{formatter.format(bid.amount)}</strong>
-                </p>
+                <div className='tags are-medium'>
+                  <span className='tag is-dark'>
+                      <span className='has-text-grey'>Bid&nbsp;</span>
+                      <strong className='has-text-white'>{formatter.format(bid.amount)}</strong>
+                  </span>
+                  {bid.status === BidStatus.WIN
+                    ? (
+                    <span className='tag is-primary'>Winner</span>
+                      )
+                    : <></>}
+                </div>
             </div>
         </div>
         {children != null ? <div className='media-right'>{children}</div> : <></>}
