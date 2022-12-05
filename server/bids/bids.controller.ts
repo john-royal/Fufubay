@@ -46,7 +46,7 @@ export default class BidsController {
     }
     const paymentIntent = await stripe.paymentIntents.create({
       customer: this.user.stripeCustomerId,
-      amount: amount * 1000,
+      amount: amount * 100, // Convert dollars to cents per Stripe requirements.
       currency: 'usd',
       capture_method: 'manual',
       payment_method: this.user.paymentCardId,
