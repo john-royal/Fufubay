@@ -1,7 +1,7 @@
-import { Auction, AuctionStatus, Prisma, User, UserRole } from '@prisma/client'
+import { Auction, AuctionStatus, BidStatus, Prisma, User, UserRole } from '@prisma/client'
 import { UploadedFile } from 'express-fileupload'
 import { extname } from 'path'
-import { ForbiddenError, UnauthorizedError, prisma, s3, stripe } from '../common'
+import { ForbiddenError, InternalServerError, prisma, s3, stripe, UnauthorizedError } from '../common'
 
 export default class AuctionsController {
   constructor (private readonly user?: User) {}
@@ -84,6 +84,40 @@ export default class AuctionsController {
     }
     const result = await s3.upload(params).promise()
     return await prisma.auction.update({ where: { id }, data: { imageUrl: result.Location } })
+  }
+
+  async finalize (id: Auction['id'], { winningBidId, reason }: { winningBidId: number, reason: string }): Promise<void> {
+    const { sellerId, bids } = await prisma.auction.findUniqueOrThrow({
+      select: { sellerId: true, bids: true },
+      where: { id }
+    })
+    if (!this.canEdit({ sellerId })) {
+      throw new ForbiddenError()
+    }
+    const winner = bids.find(bid => bid.id === winningBidId)
+    const losers = bids.filter(bid => bid.id !== winningBidId)
+    if (winner == null) {
+      throw new InternalServerError(`Cannot find winning bid ${winningBidId} in auction ${id}`)
+    }
+    await prisma.$transaction(async (tx) => {
+      await Promise.all([
+        stripe.paymentIntents.capture(winner.stripeId),
+        tx.bid.update({ data: { status: BidStatus.WIN }, where: { id: winner.id } }),
+        tx.auction.update({ data: { status: AuctionStatus.SOLD }, where: { id } })
+      ])
+    })
+    await prisma.bid.updateMany({
+      data: {
+        status: BidStatus.LOSE
+      },
+      where: {
+        AND: {
+          auctionId: id,
+          id: { not: winner.id }
+        }
+      }
+    })
+    await Promise.all(losers.map(async bid => await stripe.paymentIntents.cancel(bid.stripeId)))
   }
 
   async create ({ title, description, sellerId }: { title: string, description: string, sellerId: number }): Promise<Auction> {

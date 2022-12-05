@@ -123,6 +123,24 @@ router.delete(
   }
 )
 
+router.post(
+  '/:id/finalize',
+  celebrate<{ id: number }, {}, { winningBidId: number, reason: string }>({
+    [Segments.PARAMS]: Joi.object({
+      id: Joi.number().integer()
+    }),
+    [Segments.BODY]: Joi.object({
+      winningBidId: Joi.number().integer().required(),
+      reason: Joi.string().required()
+    })
+  }),
+  (req, res, next) => {
+    req.auctions.finalize(req.params.id, req.body)
+      .then(res.success)
+      .catch(next)
+  }
+)
+
 router.use('/:id/image', fileUpload()) // separate from route handler to suppress a false TypeScript error
 
 router.put(

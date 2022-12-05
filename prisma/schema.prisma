@@ -66,13 +66,20 @@ model Auction {
   bids        Bid[]
 }
 
+enum BidStatus {
+  PENDING
+  WIN
+  LOSE
+}
+
 model Bid {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   amount    Int
-  date      DateTime @default(now())
+  date      DateTime  @default(now())
+  status    BidStatus @default(PENDING)
   auctionId Int
   stripeId  String
   userId    Int
-  auction   Auction  @relation(fields: [auctionId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  auction   Auction   @relation(fields: [auctionId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 }

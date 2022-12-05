@@ -8,6 +8,7 @@ import BidModal from '../../../components/bids/bid-form'
 import { BidItem } from '../../../components/bids/bid-item'
 import { makeImageUrl } from '../../../lib/images'
 import request from '../../../lib/request'
+import useUser from '../../../lib/user'
 
 type UserBid = Bid & { user: User }
 type SellerAuction = Auction & { seller: User, bids: UserBid[] }
@@ -22,8 +23,10 @@ interface Props {
 const url = (id: Auction['id']) => `http://localhost:8080/api/auctions/${id}?include=bids,seller`
 
 export default function AuctionPage ({ initialValue }: Props) {
+  const { user } = useUser({ redirect: false })
   const [bidding, setBidding] = useState(false)
   const [refresh, setRefresh] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [bid, setBid] = useState(0)
   const { data: auction, mutate } = useSWR<SellerAuction>(url(initialValue.id), async url => {
     return await request({ method: 'GET', url })
@@ -46,6 +49,22 @@ export default function AuctionPage ({ initialValue }: Props) {
   }, [refresh, bidding, mutate])
 
   if (auction == null) return <></>
+
+  const handleFinalize = (id: Bid['id']) => {
+    setLoading(true)
+
+    request({
+      method: 'POST',
+      url: `/api/auctions/${auction.id}/finalize`,
+      body: {
+        winningBidId: id,
+        reason: 'High bid' // TODO: Add a way to enter a reason.
+      }
+    })
+      .then(async () => { await mutate() })
+      .catch(err => alert(err))
+      .finally(() => setLoading(false))
+  }
 
   return (
     <div className='container p-5 mx-auto'>
@@ -100,8 +119,13 @@ export default function AuctionPage ({ initialValue }: Props) {
         <h2 className="title is-3">Bids</h2>
         <ul className='list'>
           {auction.bids.map(bid => (
-            <BidItem bid={bid} key={bid.id} />
-            // TODO: Add a way to select the winning bidder here.
+            <BidItem bid={bid} key={bid.id}>
+              {user?.id === auction.sellerId && auction.endsAt != null && Date.now() > new Date(auction.endsAt).getTime() && auction.status !== AuctionStatus.SOLD
+                ? (
+                    <button className={`button is-small ${loading ? 'is-loading' : ''}`} onClick={() => handleFinalize(bid.id)}>Select Winning Bid</button>
+                  )
+                : <></>}
+            </BidItem>
           ))}
         </ul>
       </main>

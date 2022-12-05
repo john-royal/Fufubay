@@ -1,4 +1,4 @@
-import { Auction, User } from '@prisma/client'
+import { Auction, AuctionStatus, User } from '@prisma/client'
 import { GetServerSidePropsResult } from 'next'
 import AuctionRow from '../../../components/auctions/auction-row'
 import UserHeader from '../../../components/users/user-header'
@@ -7,7 +7,7 @@ import { get } from '../../../lib/request'
 export async function getServerSideProps ({ params: { id, username } }: { params: { id: string, username: string } }): Promise<GetServerSidePropsResult<{ user: User, auctions: Auction[] }>> {
   const responses = await Promise.all([
     get<User>(`http://localhost:8080/api/users/${id}`),
-    get<Auction[]>(`http://localhost:8080/api/auctions?sellerId=${id}`)
+    get<Auction[]>(`http://localhost:8080/api/auctions?sellerId=${id}&status=${Object.values(AuctionStatus).join(',')}`)
   ])
   if (!responses[0].success || !responses[1].success) {
     return {
