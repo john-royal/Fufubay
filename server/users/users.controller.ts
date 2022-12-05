@@ -3,7 +3,8 @@ import { UploadedFile } from 'express-fileupload'
 import LRUCache from 'lru-cache'
 import { extname } from 'path'
 import Stripe from 'stripe'
-import { ForbiddenError, prisma, s3, scrypt, stripe } from '../common'
+import { ForbiddenError, prisma, s3, stripe } from '../common'
+import { hash } from 'argon2'
 
 const stripeAccounts = new LRUCache<User['id'], Stripe.Account>({
   max: 25,
@@ -21,7 +22,7 @@ export default class UsersController {
     const data: Prisma.UserCreateInput = {
       username,
       email,
-      password: await scrypt.hash(password),
+      password: await hash(password),
       stripeCustomerId: '',
       stripeAccountId: ''
     }
@@ -62,7 +63,7 @@ export default class UsersController {
       throw new ForbiddenError()
     }
     if (data.password != null) {
-      data.password = await scrypt.hash(data.password)
+      data.password = await hash(data.password)
     }
     if (data.paymentCardId != null) {
       const { card } = await stripe.paymentMethods.retrieve(data.paymentCardId)

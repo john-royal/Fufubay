@@ -1,5 +1,6 @@
 import { User } from '@prisma/client'
-import { NotFoundError, prisma, scrypt, UnauthorizedError } from '../common'
+import { verify } from 'argon2'
+import { NotFoundError, prisma, UnauthorizedError } from '../common'
 
 export default class AuthController {
   async signIn ({ email, password }: { email: string, password: string }): Promise<User> {
@@ -8,11 +9,10 @@ export default class AuthController {
     })
     if (user == null) {
       throw new NotFoundError('We couldn’t find that account.')
-    }
-    const isAuthenticated = await scrypt.compare(password, user.password)
-    if (!isAuthenticated) {
+    } else if (await verify(user.password, password)) {
+      return user
+    } else {
       throw new UnauthorizedError('Wrong password.')
     }
-    return user
   }
 }
