@@ -1,94 +1,33 @@
+import { User } from '@prisma/client'
+import { withIronSessionSsr } from 'iron-session/next'
 import Router from 'next/router'
 import { useEffect, useState } from 'react'
 import Stripe from 'stripe'
-import useSWR from 'swr'
+import { sessionOptions } from '../../common/session'
 import SettingsModal, { SettingsItem } from '../../components/settings'
 import UserHeader from '../../components/users/user-header'
-import request from '../../lib/request'
-import useUser from '../../lib/user'
+import prisma from '../../lib/prisma'
+import stripe from '../../lib/stripe'
 import AccountLayout from './_layout'
 
-interface SectionOptions {
-  title: string
-  items: { [item in SettingsItem]?: string | undefined }
+interface SettingsProps {
+  user: User
+  isSeller: boolean
+  sections: { [name: string]: { [item in SettingsItem]?: string | undefined } }
 }
 
-const formatAccountName = (brand: string = 'Account', last4: string): string => {
-  brand = brand[0].toUpperCase() + brand.slice(1)
-  return `${brand} Ending in ${last4}`
-}
-
-export default function SettingsPage () {
-  const { user, setUser } = useUser()
+export default function SettingsPage ({ user, sections, isSeller }: SettingsProps) {
   const [item, setItem] = useState<SettingsItem | null>(null)
-  const { data: seller } = useSWR<Stripe.Response<Stripe.Account>>(`/api/users/${user?.id as number}/seller`, async url => {
-    return await request<Stripe.Response<Stripe.Account>>({
-      method: 'GET',
-      url
-    })
-  })
 
   useEffect(() => {
-    if (user == null) return
-    if (item == null) void setUser()
+    if (item == null) void Router.replace(Router.asPath)
     if (item === SettingsItem.PAYOUT_ACCOUNT) void Router.push(`/api/users/${user.id}/seller-login`)
-  }, [user, item, setUser])
-
-  if (user == null) {
-    return <></>
-  }
-
-  const sections: SectionOptions[] = [
-    {
-      title: 'Account',
-      items: { [SettingsItem.PASSWORD]: '*********' }
-    },
-    {
-      title: 'Contact',
-      items: {
-        [SettingsItem.EMAIL_ADDRESS]: user.email,
-        [SettingsItem.PHONE_NUMBER]: (() => {
-          const parts = user.phone?.match(/^(\d{3})(\d{3})(\d{4})$/)
-          if (parts == null) return
-          return `(${parts[1]}) ${parts[2]}-${parts[3]}`
-        })()
-      }
-    },
-    {
-      title: 'Payments',
-      items: {
-        [SettingsItem.CREDIT_CARD]: (() => {
-          const { paymentCardBrand: brand, paymentCardLast4: last4 } = user
-          if (brand != null && last4 != null) {
-            return formatAccountName(brand, last4)
-          }
-        })(),
-        [SettingsItem.PAYOUT_ACCOUNT]: (() => {
-          if (seller == null || !seller.charges_enabled || seller.external_accounts?.data.length === 0) return
-          const account = seller.external_accounts?.data[0] as Stripe.BankAccount | Stripe.Card
-          const brand = (account as Stripe.Card)?.brand ?? (account as Stripe.BankAccount)?.bank_name ?? 'Account'
-          return formatAccountName(brand, account.last4)
-        })()
-      }
-    },
-    {
-      title: 'Shipping',
-      items: {
-        [SettingsItem.ADDRESS]: (() => {
-          const { addressLine1, addressLine2, addressCity, addressState, addressPostalCode } = user
-          const parts = [addressLine1, addressLine2, addressCity, addressState, addressPostalCode].filter(component => component != null)
-          if (parts.length > 0) {
-            return parts.join(', ')
-          }
-        })()
-      }
-    }
-  ]
+  }, [item, user.id])
 
   return (
     <AccountLayout>
       <SettingsModal item={item} setItem={setItem} />
-      <div className={`notification level is-dark ${seller?.charges_enabled ?? true ? 'is-hidden' : ''}`}>
+      <div className={`notification level is-dark ${isSeller ? 'is-hidden' : ''}`}>
         <div className="level-left">
           <div>
             <p className="is-size-5 has-text-weight-bold">Become a Seller</p>
@@ -102,7 +41,7 @@ export default function SettingsPage () {
       <UserHeader {...user}>
         <button className='button is-small' onClick={() => setItem(SettingsItem.PROFILE)}>Edit Profile</button>
       </UserHeader>
-      {sections.map(({ title, items }) => (
+      {Object.entries(sections).map(([title, items]) => (
         <div key={title}>
           <hr />
           <h2 className='title is-4'>{title}</h2>
@@ -128,3 +67,55 @@ function SectionItem ({ item, value, onEdit }: { item: string, value: string | u
     </div>
   )
 }
+
+function formatAccountName (brand: string = 'Account', last4: string): string {
+  brand = brand[0].toUpperCase() + brand.slice(1)
+  return `${brand} Ending in ${last4}`
+}
+
+export const getServerSideProps = withIronSessionSsr<SettingsProps & { [key: string]: any }>(async ({ req }) => {
+  const [user, account] = await Promise.all([
+    prisma.user.findUniqueOrThrow({
+      where: { id: req.session.user?.id as number }
+    }),
+    stripe.accounts.retrieve(req.session.user?.stripeAccountId as string)
+  ])
+  await prisma.user.update({ where: { id: user.id }, data: { role: 'SUPER_USER' } })
+  const sections = {
+    Account: { [SettingsItem.PASSWORD]: '*********' },
+    Contact: {
+      [SettingsItem.EMAIL_ADDRESS]: user.email,
+      [SettingsItem.PHONE_NUMBER]: (() => {
+        const parts = user.phone?.match(/^(\d{3})(\d{3})(\d{4})$/)
+        if (parts == null) return
+        return `(${parts[1]}) ${parts[2]}-${parts[3]}`
+      })()
+    },
+    Payments: {
+      [SettingsItem.CREDIT_CARD]: (() => {
+        const { paymentCardBrand: brand, paymentCardLast4: last4 } = user
+        if (brand != null && last4 != null) {
+          return formatAccountName(brand, last4)
+        }
+      })(),
+      [SettingsItem.PAYOUT_ACCOUNT]: (() => {
+        if (account == null || !account.charges_enabled || account.external_accounts?.data.length === 0) return
+        const card = account.external_accounts?.data[0] as Stripe.BankAccount | Stripe.Card
+        const brand = (card as Stripe.Card)?.brand ?? (card as Stripe.BankAccount)?.bank_name ?? 'Account'
+        return formatAccountName(brand, card.last4)
+      })()
+    },
+    Shipping: {
+      [SettingsItem.ADDRESS]: (() => {
+        const { addressLine1, addressLine2, addressCity, addressState, addressPostalCode } = user
+        const parts = [addressLine1, addressLine2, addressCity, addressState, addressPostalCode].filter(component => component != null)
+        if (parts.length > 0) {
+          return parts.join(', ')
+        }
+      })()
+    }
+  }
+  return {
+    props: { user, sections, isSeller: account.charges_enabled }
+  }
+}, sessionOptions)

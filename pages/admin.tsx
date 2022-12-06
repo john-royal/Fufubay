@@ -1,12 +1,13 @@
-import { Auction, AuctionStatus } from '@prisma/client'
+import { Auction, AuctionStatus, User, UserRole } from '@prisma/client'
 import { useState } from 'react'
 import AuctionRow from '../components/auctions/auction-row'
+import prisma from '../lib/prisma'
 import request from '../lib/request'
 
-export default function AdminPage ({ auctions }: { auctions: Auction[] }) {
+export default function AdminPage ({ auctions, users }: { auctions: Auction[], users: User[] }) {
   const [loading, setLoading] = useState(false)
 
-  const handleSelection = (auction: Auction, status: AuctionStatus) => {
+  const updateAuction = (auction: Auction, status: AuctionStatus) => {
     setLoading(true)
 
     const body: Partial<Auction> = { status }
@@ -26,6 +27,20 @@ export default function AdminPage ({ auctions }: { auctions: Auction[] }) {
       .finally(() => setLoading(false))
   }
 
+  const updateUser = (user: User, role: UserRole) => {
+    setLoading(true)
+
+    const body: Partial<User> = { role }
+
+    request({
+      method: 'PATCH',
+      url: `/api/users/${user.id}`,
+      body
+    })
+      .catch(err => alert(err))
+      .finally(() => setLoading(false))
+  }
+
   return (
     <div className="container p-5">
       <h1 className="title">Administrator</h1>
@@ -35,13 +50,13 @@ export default function AdminPage ({ auctions }: { auctions: Auction[] }) {
         <div>
           <button
             className={`button is-small is-fullwidth is-success mb-1 ${loading ? 'is-loading' : ''}`}
-            onClick={() => handleSelection(auction, AuctionStatus.LIVE)}
+            onClick={() => updateAuction(auction, AuctionStatus.LIVE)}
           >
             Accept
           </button>
           <button
             className={`button is-small is-fullwidth is-danger ${loading ? 'is-loading' : ''}`}
-            onClick={() => handleSelection(auction, AuctionStatus.CANCELED)}
+            onClick={() => updateAuction(auction, AuctionStatus.CANCELED)}
           >
             Deny
           </button>
@@ -49,14 +64,47 @@ export default function AdminPage ({ auctions }: { auctions: Auction[] }) {
       </AuctionRow>)}
       <hr />
       <h2 className="title is-4">Users Pending Review</h2>
-      <hr />
+      {users.map(user => (
+        <div className='media' key={user.id}>
+          <div className="media-left">
+            <div>
+              {user.username}
+              {user.email}
+              {user.createdAt.toLocaleDateString()}
+            </div>
+          </div>
+          <div className="media-right">
+            <div>
+              <button
+                className={`button is-small is-fullwidth is-success mb-1 ${loading ? 'is-loading' : ''}`}
+                onClick={() => updateUser(user, UserRole.ORDINARY_USER)}
+              >
+                Accept
+              </button>
+              <button
+                className={`button is-small is-fullwidth is-danger ${loading ? 'is-loading' : ''}`}
+                onClick={() => updateUser(user, UserRole.PENDING_REVIEW)}
+              >
+                Deny
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
 
 export async function getServerSideProps () {
-  const [auctions] = await Promise.all([
-    request({ method: 'GET', url: 'http://localhost:8080/api/auctions?status=PENDING_REVIEW' })
+  const [auctions, users] = await Promise.all([
+    prisma.auction.findMany({
+      where: { status: AuctionStatus.PENDING_REVIEW },
+      orderBy: { createdAt: 'asc' }
+    }),
+    prisma.user.findMany({
+      where: { role: UserRole.PENDING_REVIEW },
+      orderBy: { createdAt: 'asc' }
+    })
   ])
-  return { props: { auctions } }
+  return { props: { auctions, users } }
 }

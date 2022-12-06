@@ -1,19 +1,10 @@
-import { Auction } from '@prisma/client'
-import { useState } from 'react'
+import { Auction, AuctionStatus, Prisma } from '@prisma/client'
+import { GetServerSidePropsContext } from 'next'
+import Router from 'next/router'
 import AuctionItem from '../components/auctions/auction-item'
 import Categories from '../components/auctions/categories'
 import Search from '../components/layout/search'
-import request from '../lib/request'
-
-export async function getServerSideProps () {
-  const auctions = await request<Auction[]>({
-    method: 'GET',
-    url: 'http://localhost:8080/api/auctions?status=LIVE'
-  })
-  return {
-    props: { auctions }
-  }
-}
+import prisma from '../lib/prisma'
 
 function batch<T> (items: T[], size: number): T[][] {
   const matrix: T[][] = []
@@ -36,18 +27,12 @@ function batch<T> (items: T[], size: number): T[][] {
 }
 
 export default function Home ({ auctions: initialValue }: { auctions: Auction[] }) {
-  const [auctions, setAuctions] = useState<Auction[][]>(batch(initialValue, 4))
+  const auctions = batch(initialValue, 4)
 
-  const handleSearch = async (query: string) => {
-    const url = new URL('/api/auctions?status=LIVE', window.location.origin)
-    if (query.length > 0) {
-      url.searchParams.set('search', query)
-    }
-    const result = await request<Auction[]>({
-      method: 'GET',
-      url: url.toString()
-    })
-    setAuctions(batch(result, 4))
+  const handleSearch = async (search: string) => {
+    const url = new URL(Router.asPath, Router.basePath)
+    url.searchParams.set('search', search)
+    await Router.push(url)
   }
 
   return (
@@ -68,4 +53,33 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
       </main>
     </>
   )
+}
+
+export async function getServerSideProps ({ query }: GetServerSidePropsContext) {
+  const where: Prisma.AuctionWhereInput = {
+    status: AuctionStatus.LIVE
+  }
+  if (typeof query.search === 'string') {
+    const search = (() => {
+      const parts = query.search.split(/\s+/)
+      if (parts.length > 1) {
+        return parts
+          .map(term => `'${term}'`)
+          .join('&')
+      } else {
+        return query.search
+      }
+    })()
+    where.OR = {
+      title: { search },
+      description: { search }
+    }
+  }
+  const auctions = await prisma.auction.findMany({
+    where,
+    orderBy: { createdAt: 'desc' }
+  })
+  return {
+    props: { auctions }
+  }
 }

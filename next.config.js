@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
-module.exports = {
+const { withSuperjson } = require('next-superjson')
+
+module.exports = withSuperjson()({
   reactStrictMode: true,
   swcMinify: true,
   images: {
@@ -11,4 +12,4 @@ module.exports = {
       }
     ]
   }
-}
+})

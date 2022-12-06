@@ -11,7 +11,7 @@ export interface Props {
 }
 
 export default function UserHeader ({ username, imageUrl, bio, createdAt, children }: Props) {
-  const joinMonthYear = new Date(createdAt).toLocaleDateString('en-us', { month: 'long', year: 'numeric' })
+  const joinMonthYear = createdAt.toLocaleDateString('en-us', { month: 'long', year: 'numeric' })
 
   return (
     <header>

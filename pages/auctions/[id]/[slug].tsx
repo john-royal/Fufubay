@@ -1,52 +1,33 @@
 import { Auction, AuctionStatus, Bid, User } from '@prisma/client'
 import formatDistanceToNow from 'date-fns/formatDistanceToNow'
-import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
+import { GetServerSidePropsResult } from 'next'
 import Image from 'next/image'
+import Router from 'next/router'
 import { useEffect, useState } from 'react'
-import useSWR from 'swr'
 import BidModal from '../../../components/bids/bid-form'
 import { BidItem } from '../../../components/bids/bid-item'
 import { makeImageUrl } from '../../../lib/images'
+import prisma from '../../../lib/prisma'
 import request from '../../../lib/request'
 import useUser from '../../../lib/user'
 
 type UserBid = Bid & { user: User }
-type SellerAuction = Auction & { seller: User, bids: UserBid[] }
+type SellerAuction = Auction & { seller: User, bids: UserBid[], highBid: number }
 
-interface Props {
-  initialValue: SellerAuction
-  fallback: {
-    [url: string]: SellerAuction
-  }
-}
-
-const url = (id: Auction['id']) => `http://localhost:8080/api/auctions/${id}?include=bids,seller`
-
-export default function AuctionPage ({ initialValue }: Props) {
+export default function AuctionPage ({ auction }: { auction: SellerAuction }) {
   const { user } = useUser({ redirect: false })
   const [bidding, setBidding] = useState(false)
   const [refresh, setRefresh] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [bid, setBid] = useState(0)
-  const { data: auction, mutate } = useSWR<SellerAuction>(url(initialValue.id), async url => {
-    return await request({ method: 'GET', url })
-  })
-
-  useEffect(() => {
-    if (auction?.bids != null) {
-      const bid = auction.bids.reduce((max, bid) => Math.max(max, bid.amount), 0)
-      setBid(bid)
-    }
-  }, [auction?.bids])
 
   useEffect(() => {
     if (bidding) {
       setRefresh(true)
     } else if (refresh) {
       setRefresh(false)
-      void mutate()
+      void Router.replace(Router.asPath)
     }
-  }, [refresh, bidding, mutate])
+  }, [refresh, bidding])
 
   if (auction == null) return <></>
 
@@ -61,7 +42,7 @@ export default function AuctionPage ({ initialValue }: Props) {
         reason: 'High bid' // TODO: Add a way to enter a reason.
       }
     })
-      .then(async () => { await mutate() })
+      .then(async () => { await Router.replace(Router.asPath) })
       .catch(err => alert(err))
       .finally(() => setLoading(false))
   }
@@ -94,13 +75,13 @@ export default function AuctionPage ({ initialValue }: Props) {
               <div className="level-item">
                 <p>
                   <span className="has-text-grey">Time Left: </span>
-                  <strong className="is-capitalized">{auction.endsAt != null ? formatDistanceToNow(new Date(auction.endsAt)) : 'N/A'}</strong>
+                  <strong className="is-capitalized">{auction.endsAt != null ? formatDistanceToNow(auction.endsAt) : 'N/A'}</strong>
                 </p>
               </div>
               <div className="level-item">
                 <p>
                   <span className="has-text-grey">High Bid: </span>
-                  <strong>${bid.toString() ?? '0'}</strong>
+                  <strong>${auction.highBid.toString() ?? '0'}</strong>
                 </p>
               </div>
               <div className="level-item is-hidden-mobile">
@@ -120,7 +101,7 @@ export default function AuctionPage ({ initialValue }: Props) {
         <ul className='list'>
           {auction.bids.map(bid => (
             <BidItem bid={bid} key={bid.id}>
-              {user?.id === auction.sellerId && auction.endsAt != null && Date.now() > new Date(auction.endsAt).getTime() && auction.status !== AuctionStatus.SOLD
+              {user?.id === auction.sellerId && auction.endsAt != null && Date.now() > auction.endsAt.getTime() && auction.status !== AuctionStatus.SOLD
                 ? (
                     <button className={`button is-small ${loading ? 'is-loading' : ''}`} onClick={() => handleFinalize(bid.id)}>Select Winning Bid</button>
                   )
@@ -133,20 +114,15 @@ export default function AuctionPage ({ initialValue }: Props) {
   )
 }
 
-export async function getServerSideProps ({ params, req }: { params: { id: number, slug: string } } & GetServerSidePropsContext): Promise<GetServerSidePropsResult<Props>> {
-  const auction = await request<SellerAuction>({
-    method: 'GET',
-    url: url(params.id),
-    headers: { Cookie: req.headers.cookie }
+export async function getServerSideProps ({ params }: { params: { id: number, slug: string } }): Promise<GetServerSidePropsResult<{ auction: SellerAuction }>> {
+  const auction = await prisma.auction.findUniqueOrThrow({
+    include: { seller: true, bids: { include: { user: true } } },
+    where: { id: Number(params.id) }
   })
+  Object.assign(auction, { highBid: auction.bids.reduce((acc, bid) => Math.max(acc, bid.amount), 0) })
   if (params.slug === auction.slug) {
     return {
-      props: {
-        initialValue: auction,
-        fallback: {
-          [url(auction.id)]: auction
-        }
-      }
+      props: { auction: auction as SellerAuction }
     }
   } else {
     return {

@@ -42,7 +42,7 @@ function StatusTag ({ auction }: { auction: Auction }) {
       return (
         <div className='tags'>
             <span className={className('is-primary')}>Live</span>
-            <span className='tag is-white has-text-dark'>Ends {new Date(auction.endsAt ?? 0).toLocaleDateString()}</span>
+            <span className='tag is-white has-text-dark'>Ends {auction.endsAt?.toLocaleDateString()}</span>
         </div>
       )
     case AuctionStatus.PENDING_REVIEW:
@@ -51,7 +51,7 @@ function StatusTag ({ auction }: { auction: Auction }) {
       return (
         <div className='tags'>
           <span className={className('is-success')}>Sold</span>
-          <span className='tag is-white has-text-dark'>{new Date(auction.endsAt ?? 0).toLocaleDateString()}</span>
+          <span className='tag is-white has-text-dark'>{auction.endsAt?.toLocaleDateString()}</span>
         </div>
       )
   }

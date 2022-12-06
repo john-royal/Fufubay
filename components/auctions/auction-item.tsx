@@ -12,7 +12,7 @@ export default function AuctionItem ({ auction }: { auction: Auction }) {
             </figure>
             <p className="title has-text-weight-bold is-6 mb-1">{auction.title}</p>
             <p className="is-size-7 has-text-dark">{auction.description}</p>
-            <p className="is-size-7 has-text-grey">Ends {new Date(auction.endsAt ?? 0).toLocaleDateString()}</p>
+            <p className="is-size-7 has-text-grey">Ends {auction.endsAt?.toLocaleDateString()}</p>
         </article>
     </AuctionLink>
   )
