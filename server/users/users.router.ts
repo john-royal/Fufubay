@@ -178,7 +178,7 @@ router.get(
       return new URL(pathname, `${req.protocol}://${req.get('host') as string}`).toString()
     }
     req.users.getSellerLoginLink(req.params.id, {
-      returnUrl: url('/settings'),
+      returnUrl: url('/account/settings'),
       refreshUrl: url(req.originalUrl)
     })
       .then(loginLink => {
