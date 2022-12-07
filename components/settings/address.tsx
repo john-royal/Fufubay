@@ -38,8 +38,8 @@ export default function AddressModal () {
       throw new Error('Your address is incomplete.')
     }
     await request({
-      method: 'PATCH',
-      url: `/api/users/${user.id}`,
+      method: 'PUT',
+      url: `/api/users/${user.id}/address`,
       body
     })
     handleClose()

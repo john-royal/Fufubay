@@ -1,10 +1,10 @@
-import { Auction, AuctionStatus, Prisma } from '@prisma/client'
+import { Auction, AuctionStatus } from '@prisma/client'
+import { getAuctions } from 'api-lib/auctions'
+import AuctionItem from 'components/auctions/auction-item'
+import Categories from 'components/auctions/categories'
+import Search from 'components/layout/search'
 import { GetServerSidePropsContext } from 'next'
 import Router from 'next/router'
-import AuctionItem from '../components/auctions/auction-item'
-import Categories from '../components/auctions/categories'
-import Search from '../components/layout/search'
-import prisma from '../lib/prisma'
 
 function batch<T> (items: T[], size: number): T[][] {
   const matrix: T[][] = []
@@ -56,28 +56,11 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
 }
 
 export async function getServerSideProps ({ query }: GetServerSidePropsContext) {
-  const where: Prisma.AuctionWhereInput = {
-    status: AuctionStatus.LIVE
-  }
-  if (typeof query.search === 'string') {
-    const search = (() => {
-      const parts = query.search.split(/\s+/)
-      if (parts.length > 1) {
-        return parts
-          .map(term => `'${term}'`)
-          .join('&')
-      } else {
-        return query.search
-      }
-    })()
-    where.OR = {
-      title: { search },
-      description: { search }
+  const auctions = await getAuctions({
+    where: {
+      status: [AuctionStatus.LIVE],
+      search: query.search as string | undefined
     }
-  }
-  const auctions = await prisma.auction.findMany({
-    where,
-    orderBy: { createdAt: 'desc' }
   })
   return {
     props: { auctions }

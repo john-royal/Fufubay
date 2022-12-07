@@ -23,8 +23,8 @@ function PaymentForm () {
       throw new Error(result.error.message)
     }
     await request({
-      method: 'PATCH',
-      url: `/api/users/${user.id}`,
+      method: 'PUT',
+      url: `/api/users/${user.id}/payment`,
       body: {
         paymentCardId: result.setupIntent.payment_method
       }

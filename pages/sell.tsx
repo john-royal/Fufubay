@@ -1,16 +1,17 @@
 import { Auction } from '@prisma/client'
+import { Button, Form, ImageField, TextField } from 'components/common/form'
+import { uploadImage } from 'lib/images'
+import request from 'lib/request'
+import useUser from 'lib/user'
 import Router from 'next/router'
 import { FormEvent, useState } from 'react'
-import { Button, Form, ImageField, TextField } from '../components/common/form'
-import { uploadImage } from '../lib/images'
-import request from '../lib/request'
-import useUser from '../lib/user'
 
 export default function CreateAuctionPage () {
   const { user } = useUser()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [image, setImage] = useState<File | null>(null)
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     if (title === '') {
       throw new Error('Please enter a title.')

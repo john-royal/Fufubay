@@ -1,8 +1,8 @@
 import { Auction, AuctionStatus, User, UserRole } from '@prisma/client'
+import prisma from 'api-lib/common/prisma'
+import AuctionRow from 'components/auctions/auction-row'
+import request from 'lib/request'
 import { useState } from 'react'
-import AuctionRow from '../components/auctions/auction-row'
-import prisma from '../lib/prisma'
-import request from '../lib/request'
 
 export default function AdminPage ({ auctions, users }: { auctions: Auction[], users: User[] }) {
   const [loading, setLoading] = useState(false)
@@ -19,8 +19,8 @@ export default function AdminPage ({ auctions, users }: { auctions: Auction[], u
     }
 
     request({
-      method: 'PATCH',
-      url: `/api/auctions/${auction.id}`,
+      method: 'PUT',
+      url: `/api/auctions/${auction.id}/status`,
       body
     })
       .catch(err => alert(err))
@@ -33,8 +33,8 @@ export default function AdminPage ({ auctions, users }: { auctions: Auction[], u
     const body: Partial<User> = { role }
 
     request({
-      method: 'PATCH',
-      url: `/api/users/${user.id}`,
+      method: 'PUT',
+      url: `/api/users/${user.id}/role`,
       body
     })
       .catch(err => alert(err))

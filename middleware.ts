@@ -1,7 +1,7 @@
 import { UserRole } from '@prisma/client'
 import { getIronSession } from 'iron-session/edge'
 import { NextMiddleware, NextRequest, NextResponse } from 'next/server'
-import { sessionOptions } from './common/session'
+import { sessionOptions } from './session.config'
 
 export const middleware: NextMiddleware = async function (req: NextRequest) {
   const session = await getIronSession(req, NextResponse.next(), sessionOptions)

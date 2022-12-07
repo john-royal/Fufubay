@@ -1,13 +1,13 @@
 import { User } from '@prisma/client'
+import prisma from 'api-lib/common/prisma'
+import { getSellerAccount } from 'api-lib/users'
 import { withIronSessionSsr } from 'iron-session/next'
 import Router from 'next/router'
 import { useEffect, useState } from 'react'
 import Stripe from 'stripe'
-import { sessionOptions } from '../../common/session'
 import SettingsModal, { SettingsItem } from '../../components/settings'
 import UserHeader from '../../components/users/user-header'
-import prisma from '../../lib/prisma'
-import stripe from '../../lib/stripe'
+import { sessionOptions } from '../../session.config'
 import AccountLayout from './_layout'
 
 interface SettingsProps {
@@ -78,9 +78,8 @@ export const getServerSideProps = withIronSessionSsr<SettingsProps & { [key: str
     prisma.user.findUniqueOrThrow({
       where: { id: req.session.user?.id as number }
     }),
-    stripe.accounts.retrieve(req.session.user?.stripeAccountId as string)
+    getSellerAccount(req.session.user?.id as number)
   ])
-  await prisma.user.update({ where: { id: user.id }, data: { role: 'SUPER_USER' } })
   const sections = {
     Account: { [SettingsItem.PASSWORD]: '*********' },
     Contact: {

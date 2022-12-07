@@ -5,19 +5,19 @@ import useSWR, { KeyedMutator } from 'swr'
 import request from './request'
 
 export default function useUser (options: RedirectOptions = { redirect: 'unauthenticated', to: '/' }): { user: User | undefined, setUser: KeyedMutator<User> } {
-  const { data: user, mutate: setUser } = useSWR<User>('/api/users/me', async url => {
+  const { data: user, mutate: setUser, isValidating } = useSWR<User>('/api/users/me', async url => {
     return await request({ method: 'GET', url })
   })
 
   useEffect(() => {
-    if (options.redirect === false) return
+    if (options.redirect === false || isValidating) return
 
     if (user == null && options.redirect === 'unauthenticated') {
       void Router.push(`${options.to}?redirect=${Router.asPath}`)
     } else if (user != null && options.redirect === 'authenticated') {
       void Router.push(options.to)
     }
-  }, [user, options])
+  }, [user, options, isValidating])
 
   return { user, setUser }
 }

@@ -1,8 +1,8 @@
 import { Auction, Bid, User } from '@prisma/client'
+import prisma from 'api-lib/common/prisma'
+import AuctionRow from 'components/auctions/auction-row'
+import UserHeader from 'components/users/user-header'
 import { GetServerSidePropsResult } from 'next'
-import AuctionRow from '../../../components/auctions/auction-row'
-import UserHeader from '../../../components/users/user-header'
-import prisma from '../../../lib/prisma'
 
 type UserProfile = Pick<User, 'username' | 'bio' | 'imageUrl' | 'createdAt'> & { auctions: Auction[], bids: Bid[] }
 

@@ -1,15 +1,15 @@
 import { Auction, AuctionStatus, Bid, User } from '@prisma/client'
+import prisma from 'api-lib/common/prisma'
+import BidModal from 'components/bids/bid-form'
+import { BidItem } from 'components/bids/bid-item'
 import formatDistanceToNow from 'date-fns/formatDistanceToNow'
+import { makeImageUrl } from 'lib/images'
+import request from 'lib/request'
+import useUser from 'lib/user'
 import { GetServerSidePropsResult } from 'next'
 import Image from 'next/image'
 import Router from 'next/router'
 import { useEffect, useState } from 'react'
-import BidModal from '../../../components/bids/bid-form'
-import { BidItem } from '../../../components/bids/bid-item'
-import { makeImageUrl } from '../../../lib/images'
-import prisma from '../../../lib/prisma'
-import request from '../../../lib/request'
-import useUser from '../../../lib/user'
 
 type UserBid = Bid & { user: User }
 type SellerAuction = Auction & { seller: User, bids: UserBid[], highBid: number }

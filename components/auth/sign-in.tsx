@@ -8,7 +8,7 @@ export default function SignInForm ({ setScreen }: { setScreen: SetScreen }) {
   const { setUser } = useUser({ redirect: false })
   const { register, submit } = useForm<User>({
     method: 'POST',
-    url: '/api/auth/sign-in'
+    url: '/api/auth'
   }, {
     email: '',
     password: ''

@@ -1,9 +1,9 @@
 import { Auction } from '@prisma/client'
+import prisma from 'api-lib/common/prisma'
+import AuctionRow from 'components/auctions/auction-row'
 import { withIronSessionSsr } from 'iron-session/next'
 import Link from 'next/link'
-import { sessionOptions } from '../../common/session'
-import AuctionRow from '../../components/auctions/auction-row'
-import prisma from '../../lib/prisma'
+import { sessionOptions } from 'session.config'
 import AccountLayout from './_layout'
 
 export default function Auctions ({ auctions }: { auctions: Auction[] }) {

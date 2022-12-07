@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { get } from '../../lib/request'
+import request from '../../lib/request'
 import useUser from '../../lib/user'
 import AuthModal, { Screen } from '../auth'
 
@@ -16,8 +16,14 @@ export default function Navbar () {
   const signOut = () => {
     setSigningOut(true)
 
-    get('/api/auth/sign-out')
+    request({
+      method: 'DELETE',
+      url: '/api/auth'
+    })
       .then(async () => {
+        if (router.asPath.match(/(\/account)|(\/admin)|(\/sell)/) != null) {
+          void router.push('/')
+        }
         await setUser(undefined)
       })
       .catch(err => alert(err))
