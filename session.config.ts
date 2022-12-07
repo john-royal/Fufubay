@@ -5,7 +5,8 @@ export const sessionOptions: IronSessionOptions = {
   password: process.env.SESSION_SECRET as string,
   cookieName: 'fufubay-session',
   cookieOptions: {
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
   }
 }
 
