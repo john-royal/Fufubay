@@ -6,11 +6,11 @@ export default function Categories () {
   <p className="control has-icons-left">
     <span className="select">
       <select>
-        <option selected>Brand:</option>
-        <option>Nike</option>
-        <option>Addias</option>
-        <option>Puma</option>
-        <option>New Balance</option>
+        <option value=''>Brand:</option>
+        <option value='nike'>Nike</option>
+        <option value='adidas'>Addias</option>
+        <option value='puma'>Puma</option>
+        <option value='new-balance'>New Balance</option>
       </select>
     </span>
     <span className="icon is-small is-left">
@@ -22,14 +22,14 @@ export default function Categories () {
   <p className="control has-icons-left">
     <span className="select">
       <select>
-        <option selected>Size:</option>
-        <option>M 6</option>
-        <option>M 7</option>
-        <option>M 8</option>
-        <option>M 9</option>
-        <option>M 10</option>
-        <option>M 11</option>
-        <option>M 12</option>
+        <option value=''>Size:</option>
+        <option value='m-6'>M 6</option>
+        <option value='m-7'>M 7</option>
+        <option value='m-8'>M 8</option>
+        <option value='m-9'>M 9</option>
+        <option value='m-10'>M 10</option>
+        <option value='m-11'>M 11</option>
+        <option value='m-12'>M 12</option>
       </select>
     </span>
     <span className="icon is-small is-left">
@@ -41,10 +41,10 @@ export default function Categories () {
   <p className="control has-icons-left">
     <span className="select">
       <select>
-        <option selected>Feature</option>
-        <option>Most Popular</option>
-        <option>Low To High</option>
-        <option>High To Low</option>
+        <option value=''>Feature</option>
+        <option value='popular'>Most Popular</option>
+        <option value='low-to-high'>Low To High</option>
+        <option value='high-to-low'>High To Low</option>
       </select>
     </span>
     <span className="icon is-small is-left">

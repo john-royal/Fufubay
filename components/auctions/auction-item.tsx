@@ -8,7 +8,7 @@ export default function AuctionItem ({ auction }: { auction: Auction }) {
     <AuctionLink auction={auction}>
         <article className='tile is-child'>
             <figure className="image mb-3">
-                <Image src={auction.imageUrl} alt={auction.title} width={320} height={240} style={{ width: '320px', height: '240px' }} loader={makeImageUrl} />
+                <Image src={auction.imageUrl} alt={auction.title} width={320} height={240} style={{ width: '320px', height: '240px' }} loader={makeImageUrl} priority />
             </figure>
             <p className="title has-text-weight-bold is-6 mb-1">{auction.title}</p>
             <p className="is-size-7 has-text-dark">{auction.description}</p>
