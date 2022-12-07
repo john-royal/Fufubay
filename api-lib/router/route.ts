@@ -28,7 +28,7 @@ export default class Route<Query extends {} = {}, Body extends {} = {}> {
   }
 
   async handle (rawReq: NextApiRequest, rawRes: NextApiResponse): Promise<void> {
-    const req = new Request<Query, Body>(rawReq)
+    const req = new Request<Query, Body>(rawReq, this.schema)
     const res = new Response(rawRes)
     try {
       await req.validate()
