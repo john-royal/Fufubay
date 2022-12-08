@@ -30,9 +30,7 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
   const auctions = batch(initialValue, 4)
 
   const handleSearch = async (search: string) => {
-    const url = new URL(Router.asPath, Router.basePath)
-    url.searchParams.set('search', search)
-    await Router.push(url)
+    await Router.push(`/?search=${encodeURIComponent(search)}`)
   }
 
   return (
