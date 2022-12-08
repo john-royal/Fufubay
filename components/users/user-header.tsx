@@ -7,10 +7,11 @@ export interface Props {
   imageUrl: string
   bio: string
   createdAt: Date
+  rating: number | null
   children?: ReactNode
 }
 
-export default function UserHeader ({ username, imageUrl, bio, createdAt, children }: Props) {
+export default function UserHeader ({ username, imageUrl, bio, createdAt, rating, children }: Props) {
   const joinMonthYear = createdAt.toLocaleDateString('en-us', { month: 'long', year: 'numeric' })
 
   return (
@@ -26,6 +27,7 @@ export default function UserHeader ({ username, imageUrl, bio, createdAt, childr
                     <div className='has-text-centered-mobile'>
                         <h1 className='title has-text-weight-bold mb-5'>{username}</h1>
                         <p className='subtitle is-6 has-text-grey'>Joined {joinMonthYear}</p>
+                        <p className='subtitle is-6 has-text-grey'>{rating != null ? `Rating: ${rating}` : ''}</p>
                     </div>
                 </div>
             </div>

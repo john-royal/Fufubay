@@ -1,3 +1,4 @@
+import { UserRole } from '@prisma/client'
 import { signIn, SignInInput } from 'api-lib/auth'
 import { Route, Router } from 'api-lib/router'
 import Joi from 'joi'
@@ -14,9 +15,13 @@ export default Router.for([
       },
       async handler (req, res) {
         const user = await signIn(req.body)
-        req.session.user = user
-        await req.session.save()
-        res.success(user)
+        if (user.role !== UserRole.BANNED) {
+          req.session.user = user
+          await req.session.save()
+          res.success(user)
+        } else {
+          res.forbidden('You’ve been banned from Fufubay.')
+        }
       }
     }
   ),

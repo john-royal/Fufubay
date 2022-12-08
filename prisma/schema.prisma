@@ -12,6 +12,7 @@ datasource db {
 }
 
 enum UserRole {
+  BANNED
   PENDING_REVIEW
   ORDINARY_USER
   SUPER_USER
@@ -41,7 +42,30 @@ model User {
   stripeAccountId     String
   stripeCustomerId    String
   auctions            Auction[]
+  reports             Report[]
   bids                Bid[]
+  authoredReviews     Review[]  @relation("authored-reviews")
+  reviews             Review[]  @relation("reviews")
+}
+
+model Review {
+  id         Int     @id @default(autoincrement())
+  rating     Int
+  comments   String?
+  seller     User    @relation("reviews", fields: [sellerId], references: [id])
+  customer   User    @relation("authored-reviews", fields: [customerId], references: [id])
+  sellerId   Int
+  customerId Int
+}
+
+model Report {
+  id         Int      @id @default(autoincrement())
+  message    String
+  isResolved Boolean  @default(false)
+  user       User?    @relation(fields: [userId], references: [id])
+  auction    Auction? @relation(fields: [auctionId], references: [id])
+  auctionId  Int?
+  userId     Int?
 }
 
 enum AuctionStatus {
@@ -52,18 +76,19 @@ enum AuctionStatus {
 }
 
 model Auction {
-  id          Int           @id @default(autoincrement())
-  title       String
-  description String
-  slug        String
-  imageUrl    String        @default("https://csc-32200-fufubay-images.s3.amazonaws.com/auctions/auction-placeholder.png")
-  status      AuctionStatus @default(PENDING_REVIEW)
-  createdAt   DateTime      @default(now())
-  startsAt    DateTime?
-  endsAt      DateTime?
-  sellerId    Int
-  seller      User          @relation(fields: [sellerId], references: [id])
-  bids        Bid[]
+  id           Int           @id @default(autoincrement())
+  title        String
+  description  String
+  slug         String
+  imageUrl     String        @default("https://csc-32200-fufubay-images.s3.amazonaws.com/auctions/auction-placeholder.png")
+  status       AuctionStatus @default(PENDING_REVIEW)
+  createdAt    DateTime      @default(now())
+  startsAt     DateTime?
+  endsAt       DateTime?
+  sellerId     Int
+  seller       User          @relation(fields: [sellerId], references: [id])
+  bids         Bid[]
+  reports      Report[]
 }
 
 enum BidStatus {

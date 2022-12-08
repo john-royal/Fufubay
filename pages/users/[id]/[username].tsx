@@ -4,12 +4,12 @@ import AuctionRow from 'components/auctions/auction-row'
 import UserHeader from 'components/users/user-header'
 import { GetServerSidePropsResult } from 'next'
 
-type UserProfile = Pick<User, 'username' | 'bio' | 'imageUrl' | 'createdAt'> & { auctions: Auction[], bids: Bid[] }
+type UserProfile = Pick<User, 'id' | 'username' | 'bio' | 'imageUrl' | 'createdAt'> & { auctions: Auction[], bids: Bid[], rating: number | null }
 
 export default function UserPage ({ user }: { user: UserProfile }) {
   return (
       <div className='container mt-5'>
-        <UserHeader username={user.username} bio={user.bio} imageUrl={user.imageUrl} createdAt={user.createdAt} />
+        <UserHeader username={user.username} bio={user.bio} imageUrl={user.imageUrl} rating={user.rating} createdAt={user.createdAt} />
         <hr />
         <section>
           <h2 className='title'>Auctions</h2>
@@ -41,6 +41,11 @@ export async function getServerSideProps ({ params: { id, username } }: { params
     },
     where: { id: Number(id) }
   })
+  const rating = await prisma.review.aggregate({
+    _avg: { rating: true },
+    where: { sellerId: user.id }
+  })
+    .then(result => result._avg.rating)
   if (username !== user.username) {
     return {
       redirect: {
@@ -50,6 +55,6 @@ export async function getServerSideProps ({ params: { id, username } }: { params
     }
   }
   return {
-    props: { user }
+    props: { user: Object.assign(user, { rating }) }
   }
 }

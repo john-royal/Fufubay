@@ -1,4 +1,4 @@
-import { User } from '@prisma/client'
+import { User, UserRole } from '@prisma/client'
 import { Route, Router } from 'api-lib/router'
 import { getUser, patchUser, PatchUserInput } from 'api-lib/users'
 import Joi from 'joi'
@@ -17,8 +17,14 @@ export default Router.for([
         return req.query.id === 'me' ? res.success(null) : res.badRequest('Cannot find user with null ID')
       }
       const user = await getUser(id)
-      req.session.user = user
-      await req.session.save()
+      if (req.session.user?.id === user.id) {
+        if (user.role === UserRole.BANNED) {
+          req.session.destroy()
+        } else {
+          req.session.user = user
+          await req.session.save()
+        }
+      }
       return res.success(user)
     }
   }),
