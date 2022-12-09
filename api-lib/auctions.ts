@@ -1,5 +1,5 @@
 import { Auction, AuctionStatus, Bid, BidStatus, Prisma, User } from '@prisma/client'
-import { ForbiddenError, InternalServerError } from 'api-lib/common/errors'
+import { BadRequestError, ForbiddenError, InternalServerError } from 'api-lib/common/errors'
 import prisma from 'api-lib/common/prisma'
 import { getSellerAccount } from 'api-lib/users'
 import { File } from 'formidable'
@@ -24,6 +24,15 @@ export async function createAuction ({ title, description, sellerId }: CreateAuc
     throw new ForbiddenError('Your account does not have a payout account set up.')
   }
   const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
+  const canceledSimilarItemCount = await prisma.auction.count({
+    where: {
+      OR: { title, description, slug },
+      status: AuctionStatus.CANCELED
+    }
+  })
+  if (canceledSimilarItemCount > 0) {
+    throw new BadRequestError('This item has been banned. For more information, contact a super user.')
+  }
   return await prisma.auction.create({
     data: {
       title,
