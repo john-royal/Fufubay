@@ -34,6 +34,7 @@ export default class Route<Query extends {} = {}, Body extends {} = {}> {
       await req.validate()
       await this.handler(req, res)
     } catch (e) {
+      console.error(e)
       const { status, error } = this.normalizeError(e)
       res.raw.status(status).json({
         success: false,
