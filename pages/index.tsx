@@ -55,10 +55,8 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
 
 export async function getServerSideProps ({ query }: GetServerSidePropsContext) {
   const auctions = await getAuctions({
-    where: {
-      status: [AuctionStatus.LIVE],
-      search: query.search as string | undefined
-    }
+    status: AuctionStatus.LIVE,
+    search: query.search as string | undefined
   })
   return {
     props: { auctions }

@@ -34,11 +34,10 @@ export async function createAuction ({ title, description, sellerId }: CreateAuc
   })
 }
 
-export async function getAuctions ({ where: { status, sellerId, search } }: { where: { status?: AuctionStatus[], sellerId?: Auction['sellerId'], search?: string } }): Promise<Auction[]> {
-  const where: Prisma.AuctionWhereInput = {
-    status: status != null ? { in: status } : undefined,
-    sellerId
-  }
+export interface AuctionGetInput { sellerId?: User['id'], status?: AuctionStatus, search?: string }
+
+export async function getAuctions ({ sellerId, status, search }: AuctionGetInput): Promise<Auction[]> {
+  const where: Prisma.AuctionWhereInput = { sellerId, status }
   if (search != null) {
     search = normalizeSearch(search)
     where.OR = {
