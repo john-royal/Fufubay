@@ -1,5 +1,5 @@
 import { Auction, Bid, User } from '@prisma/client'
-import prisma from 'api-lib/common/prisma'
+import { getUser } from 'api-lib/users'
 import AuctionRow from 'components/auctions/auction-row'
 import UserHeader from 'components/users/user-header'
 import { GetServerSidePropsResult } from 'next'
@@ -28,24 +28,17 @@ export default function UserPage ({ user }: { user: UserProfile }) {
   )
 }
 
-export async function getServerSideProps ({ params: { id, username } }: { params: { id: string, username: string } }): Promise<GetServerSidePropsResult<{ user: UserProfile }>> {
-  const user = await prisma.user.findUniqueOrThrow({
-    select: {
-      id: true,
-      username: true,
-      bio: true,
-      imageUrl: true,
-      createdAt: true,
-      auctions: true,
-      bids: { include: { auction: true } }
-    },
-    where: { id: Number(id) }
-  })
-  const rating = await prisma.review.aggregate({
-    _avg: { rating: true },
-    where: { sellerId: user.id }
-  })
-    .then(result => result._avg.rating)
+export async function getServerSideProps ({ params: { id, username } }: { params: { id: number, username: string } }): Promise<GetServerSidePropsResult<{ user: UserProfile }>> {
+  const user = await getUser(Number(id), {
+    id: true,
+    username: true,
+    bio: true,
+    imageUrl: true,
+    createdAt: true,
+    auctions: true,
+    bids: { include: { auction: true } },
+    rating: true
+  }) as unknown as UserProfile
   if (username !== user.username) {
     return {
       redirect: {
@@ -55,6 +48,6 @@ export async function getServerSideProps ({ params: { id, username } }: { params
     }
   }
   return {
-    props: { user: Object.assign(user, { rating }) }
+    props: { user }
   }
 }

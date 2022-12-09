@@ -1,6 +1,5 @@
 import { User } from '@prisma/client'
-import prisma from 'api-lib/common/prisma'
-import { getSellerAccount } from 'api-lib/users'
+import { getSellerAccount, getUser } from 'api-lib/users'
 import { withIronSessionSsr } from 'iron-session/next'
 import Router from 'next/router'
 import { useEffect, useState } from 'react'
@@ -11,7 +10,7 @@ import { sessionOptions } from '../../session.config'
 import AccountLayout from './_layout'
 
 interface SettingsProps {
-  user: User
+  user: User & { rating: number | null }
   isSeller: boolean
   sections: { [name: string]: { [item in SettingsItem]?: string | undefined } }
 }
@@ -74,11 +73,10 @@ function formatAccountName (brand: string = 'Account', last4: string): string {
 }
 
 export const getServerSideProps = withIronSessionSsr<SettingsProps & { [key: string]: any }>(async ({ req }) => {
+  const id = req.session.user?.id as number
   const [user, account] = await Promise.all([
-    prisma.user.findUniqueOrThrow({
-      where: { id: req.session.user?.id as number }
-    }),
-    getSellerAccount(req.session.user?.id as number)
+    getUser(id, { rating: true }),
+    getSellerAccount(id)
   ])
   const sections = {
     Account: { [SettingsItem.PASSWORD]: '*********' },
@@ -115,6 +113,10 @@ export const getServerSideProps = withIronSessionSsr<SettingsProps & { [key: str
     }
   }
   return {
-    props: { user, sections, isSeller: account.charges_enabled }
+    props: {
+      user,
+      sections,
+      isSeller: account.charges_enabled
+    }
   }
 }, sessionOptions)

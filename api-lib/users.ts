@@ -8,8 +8,21 @@ import { readFile } from 'fs/promises'
 import { extname } from 'path'
 import Stripe from 'stripe'
 
-export async function getUser (id: User['id']): Promise<User> {
-  return await prisma.user.findUniqueOrThrow({ where: { id } })
+type UserSelectInput = Prisma.UserSelect & { rating?: boolean }
+
+export async function getUser<T extends UserSelectInput> (id: User['id'], select?: T): Promise<User & (T extends { rating: true } ? { rating: number | null } : {})> {
+  const isRatingSelected = select?.rating === true
+  delete select?.rating // prevents this from messing with Prisma
+  const user = await prisma.user.findUniqueOrThrow({
+    select: Object.keys(select ?? {}).length > 0 ? select : undefined,
+    where: { id }
+  }) as User
+  if (isRatingSelected) {
+    const rating = await getSellerRating(id)
+    return Object.assign(user, { rating })
+  } else {
+    return user as User & { rating: null }
+  }
 }
 
 export async function getSetupIntent (id: User['id']): Promise<Stripe.SetupIntent> {
@@ -28,6 +41,14 @@ export async function getSellerAccount (id: User['id']): Promise<Stripe.Account>
   return await stripe.accounts.retrieve({
     stripeAccount: stripeAccountId
   })
+}
+
+export async function getSellerRating (id: User['id']): Promise<number | null> {
+  return prisma.review.aggregate({
+    _avg: { rating: true },
+    where: { sellerId: id }
+  })
+    .then(result => result._avg.rating)
 }
 
 export async function getSellerLoginLink (id: User['id']): Promise<{ url: string }> {
