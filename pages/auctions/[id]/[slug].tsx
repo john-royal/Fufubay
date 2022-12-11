@@ -3,7 +3,7 @@ import prisma from 'api-lib/common/prisma'
 import { getSellerRating } from 'api-lib/users'
 import BidModal from 'components/bids/bid-form'
 import { BidItem } from 'components/bids/bid-item'
-import Report from 'components/report/report'
+import ReviewModal from 'components/review'
 import formatDistanceToNow from 'date-fns/formatDistanceToNow'
 import { makeImageUrl } from 'lib/images'
 import request from 'lib/request'
@@ -26,13 +26,13 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
   const [reporting, setReporting] = useState(false)
 
   useEffect(() => {
-    if (bidding) {
+    if (bidding || reporting) {
       setRefresh(true)
     } else if (refresh) {
       setRefresh(false)
       void Router.replace(Router.asPath)
     }
-  }, [refresh, bidding])
+  }, [refresh, reporting, bidding])
 
   if (auction == null) return <></>
 
@@ -56,7 +56,7 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
     <>
     <div className='container p-5 mx-auto'>
       <BidModal isActive={bidding} handleClose={() => setBidding(false)} auctionId={auction.id} />
-      <Report isVisible={reporting} onClose={() => setReporting(false)} />
+      <ReviewModal sellerId={auction.seller.id} isActive={reporting} handleClose={() => setReporting(false)} />
 
       {/* TODO: Add some quick options (e.g. accept, deny, cancel) for admins here. */}
       {auction.status === AuctionStatus.PENDING_REVIEW
@@ -64,7 +64,7 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
           <div className='notification is-dark'>
             <p>This auction is pending review.</p>
           </div>
-        )
+          )
         : <></>}
 
       <main className='column is-two-thirds-desktop'>
@@ -111,7 +111,7 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
               {user?.id === auction.sellerId && auction.endsAt != null && Date.now() > auction.endsAt.getTime() && auction.status !== AuctionStatus.SOLD
                 ? (
                   <button className={`button is-small ${loading ? 'is-loading' : ''}`} onClick={() => handleFinalize(bid.id)}>Select Winning Bid</button>
-                )
+                  )
                 : <></>}
               <button className='button is-light is-small' onClick={() => setReporting(true)}>Rate</button>
             </BidItem>
