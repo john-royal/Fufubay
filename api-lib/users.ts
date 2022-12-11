@@ -5,8 +5,14 @@ import stripe from 'api-lib/common/stripe'
 import { hash } from 'argon2'
 import { File } from 'formidable'
 import { readFile } from 'fs/promises'
+import LRUCache from 'lru-cache'
 import { extname } from 'path'
 import Stripe from 'stripe'
+
+const stripeAccounts = new LRUCache<User['id'], Stripe.Account>({
+  max: 25,
+  ttl: 60 * 1000
+})
 
 type UserSelectInput = Prisma.UserSelect & { rating?: boolean }
 
@@ -34,17 +40,22 @@ export async function getSetupIntent (id: User['id']): Promise<Stripe.SetupInten
 }
 
 export async function getSellerAccount (id: User['id']): Promise<Stripe.Account> {
+  if (stripeAccounts.has(id)) {
+    return stripeAccounts.get(id) as Stripe.Account
+  }
   const { stripeAccountId } = await prisma.user.findUniqueOrThrow({
     select: { stripeAccountId: true },
     where: { id }
   })
-  return await stripe.accounts.retrieve({
+  const stripeAccount = await stripe.accounts.retrieve({
     stripeAccount: stripeAccountId
   })
+  stripeAccounts.set(id, stripeAccount)
+  return stripeAccount
 }
 
 export async function getSellerRating (id: User['id']): Promise<number | null> {
-  return prisma.review.aggregate({
+  return await prisma.review.aggregate({
     _avg: { rating: true },
     where: { sellerId: id }
   })
