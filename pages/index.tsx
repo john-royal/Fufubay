@@ -2,6 +2,7 @@ import { Auction, AuctionStatus } from '@prisma/client'
 import { getAuctions } from 'api-lib/auctions'
 import AuctionItem from 'components/auctions/auction-item'
 import Categories from 'components/auctions/categories'
+import Highlight from 'components/highlight'
 import Search from 'components/layout/search'
 import { GetServerSidePropsContext } from 'next'
 import Router from 'next/router'
@@ -38,6 +39,8 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
       <Search onSubmit={handleSearch} />
       <main className='container mx-auto'>
         <br/>
+        <br/>
+        <Highlight/>
         {auctions.map((row, i) => (
           <div key={i} className="columns mx-auto">
             {row.map(auction => (
