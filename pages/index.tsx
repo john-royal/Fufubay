@@ -37,7 +37,6 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
     <>
       <Search onSubmit={handleSearch} />
       <main className='container mx-auto'>
-        <Categories />
         <br/>
         {auctions.map((row, i) => (
           <div key={i} className="columns mx-auto">
