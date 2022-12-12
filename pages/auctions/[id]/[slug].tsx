@@ -70,7 +70,7 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
       <main className='column is-two-thirds-desktop'>
         <header className='block'>
           <h1 className='title'>{auction.title}</h1>
-          <p className='subtitle'>{auction.description}</p>
+          <p className='subtitle'>{auction.description} <button className="button is-pulled-right button is-small button is-link">Report</button></p>
           <figure className='image is-4by3'>
             <Image src={auction.imageUrl} alt={auction.title} width={740} height={555} priority loader={makeImageUrl} />
           </figure>
