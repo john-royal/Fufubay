@@ -12,7 +12,9 @@ import { GetServerSidePropsResult } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import Router from 'next/router'
-import { useEffect, useState } from 'react'
+import Reports from 'pages/api/reports'
+import { Fragment, useEffect, useState } from 'react'
+import Report from './report'
 
 type Seller = User & { rating: number | null }
 type UserBid = Bid & { user: User }
@@ -51,6 +53,7 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
       .catch(err => alert(err))
       .finally(() => setLoading(false))
   }
+  const [showModal, setShowModal] = useState(false)
 
   return (
     <>
@@ -70,7 +73,7 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
       <main className='column is-two-thirds-desktop'>
         <header className='block'>
           <h1 className='title'>{auction.title}</h1>
-          <p className='subtitle'>{auction.description} <button className="button is-pulled-right button is-small button is-link">Report</button></p>
+          <p className='subtitle'>{auction.description} <button className="button is-pulled-right button is-small button is-link" onClick={() => setShowModal(true)}>Report</button></p>
           <figure className='image is-4by3'>
             <Image src={auction.imageUrl} alt={auction.title} width={740} height={555} priority loader={makeImageUrl} />
           </figure>
@@ -124,6 +127,7 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
         <SellerPreview seller={auction.seller} />
       </aside>
     </div>
+    <Report isVisible={showModal} onClose={ () => setShowModal(false)} />
     </>
   )
 }
