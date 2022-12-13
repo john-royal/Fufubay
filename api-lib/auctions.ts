@@ -69,9 +69,9 @@ function normalizeSearch (query: string): string {
   }
 }
 
-export interface FinalizeAuctionInput { winningBidId: Bid['id']}
+export interface FinalizeAuctionInput { winningBidId: Bid['id'], reason: string }
 
-export async function finalizeAuction (id: Auction['id'], { winningBidId }: FinalizeAuctionInput): Promise<void> {
+export async function finalizeAuction (id: Auction['id'], { winningBidId, reason }: FinalizeAuctionInput): Promise<void> {
   const { bids } = await prisma.auction.findUniqueOrThrow({
     select: { bids: true },
     where: { id }
@@ -85,7 +85,7 @@ export async function finalizeAuction (id: Auction['id'], { winningBidId }: Fina
     await Promise.all([
       stripe.paymentIntents.capture(winner.stripeId),
       tx.bid.update({ data: { status: BidStatus.WIN }, where: { id: winner.id } }),
-      tx.auction.update({ data: { status: AuctionStatus.SOLD }, where: { id } })
+      tx.auction.update({ data: { status: AuctionStatus.SOLD, resultReason: reason }, where: { id } })
     ])
   })
   await prisma.bid.updateMany({

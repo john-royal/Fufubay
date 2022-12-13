@@ -11,7 +11,8 @@ export default Router.for(
         id: Joi.number().integer().required()
       }),
       body: Joi.object({
-        winningBidId: Joi.string().required()
+        winningBidId: Joi.number().required(),
+        reason: Joi.string()
       })
     },
     async handler (req, res) {

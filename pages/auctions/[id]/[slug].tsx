@@ -38,7 +38,7 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
     setLoading(true)
 
     request({
-      method: 'POST',
+      method: 'PUT',
       url: `/api/auctions/${auction.id}/finalize`,
       body: {
         winningBidId: id,

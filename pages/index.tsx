@@ -56,12 +56,6 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
 }
 
 export async function getServerSideProps ({ query }: GetServerSidePropsContext) {
-  await prisma.auction.update({
-    where: { id: 3 },
-    data: {
-      endsAt: new Date()
-    }
-  })
   const auctions = await getAuctions({
     status: AuctionStatus.LIVE,
     search: query.search as string | undefined
