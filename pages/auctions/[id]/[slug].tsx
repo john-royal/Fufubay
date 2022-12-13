@@ -67,7 +67,7 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
     <>
     <div className='container p-5 mx-auto'>
       <BidModal isActive={bidding} handleClose={() => setBidding(false)} auctionId={auction.id} />
-      <Report isVisible={reporting} onClose={ () => setReporting(false)} />
+      <Report auction={auction} isActive={reporting} handleClose={ () => setReporting(false)} />
 
       {auctionStatusNotification != null
         ? (

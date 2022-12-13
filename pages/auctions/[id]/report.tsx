@@ -33,7 +33,7 @@ export default function ReviewModal ({ auction, isActive, handleClose }: ReviewM
   return (
     <Modal isActive={isActive} handleClose={handleClose}>
       <Form onSubmit={handleSubmit}>
-        <h3 className="title mb-6">Report Seller</h3>
+        <h3 className='title'>Report Seller</h3>
         {user == null ? <TextField title='Name' type='text' name='name' value={name} onChange={e => setName(e.target.value)} /> : <></>}
         <TextField title='Comments' type='text' name='comments' value={comments} onChange={e => setComments(e.target.value)} />
         <Button title='Submit' />
