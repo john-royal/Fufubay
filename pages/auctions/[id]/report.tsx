@@ -10,20 +10,20 @@ export type ReviewModalProps = { auction: Auction } & ModalProps
 export default function ReviewModal ({ auction, isActive, handleClose }: ReviewModalProps) {
   const { user } = useUser({ redirect: false })
   const [name, setName] = useState('')
-  const [comments, setComments] = useState('')
+  const [message, setMessage] = useState('')
 
   const handleSubmit = async () => {
-    if (user?.id == null) {
-      throw new Error('You must be signed in to submit a report.')
+    if (user?.id == null && name === '') {
+      throw new Error('Please sign in or enter your name.')
     }
     await request({
       url: '/api/reports',
       method: 'POST',
       body: {
-        customerName: user.id == null ? name : undefined,
-        comments,
+        customerName: user?.id == null ? name : undefined,
+        message,
         auctionId: auction.id,
-        customerId: user.id,
+        customerId: user?.id,
         sellerId: auction.sellerId
       }
     })
@@ -35,7 +35,7 @@ export default function ReviewModal ({ auction, isActive, handleClose }: ReviewM
       <Form onSubmit={handleSubmit}>
         <h3 className='title'>Report Seller</h3>
         {user == null ? <TextField title='Name' type='text' name='name' value={name} onChange={e => setName(e.target.value)} /> : <></>}
-        <TextField title='Comments' type='text' name='comments' value={comments} onChange={e => setComments(e.target.value)} />
+        <TextField title='Comments' type='text' name='comments' value={message} onChange={e => setMessage(e.target.value)} />
         <Button title='Submit' />
       </Form>
     </Modal>

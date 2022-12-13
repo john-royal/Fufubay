@@ -17,8 +17,13 @@ export default Router.for(
       })
     },
     async handler (req, res) {
-      if (!req.isAuthenticated({ userId: req.body.sellerId })) {
-        return res.forbidden()
+      const { customerName, customerId } = req.body
+      if (req.session.user?.id != null) {
+        if (!req.isAuthenticated({ userId: customerId })) {
+          return res.forbidden('You do not have permission to submit a report on behalf of that user.')
+        }
+      } else if (customerName == null) {
+        return res.badRequest('Please sign in or enter a customer name.')
       }
       const report = await prisma.report.create({
         data: req.body

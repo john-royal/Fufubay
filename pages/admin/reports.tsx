@@ -8,7 +8,7 @@ import AdminLayout from './_layout'
 
 interface UserInfo { id: number, username: string }
 interface AuctionInfo { id: number, title: string, slug: string, seller: UserInfo }
-type FullReport = Report & { user: UserInfo, auction: AuctionInfo }
+type FullReport = Report & { customer: UserInfo, auction: AuctionInfo }
 
 export default function ReportsAdminPage ({ reports }: { reports: FullReport[] }) {
   return (
@@ -27,8 +27,13 @@ export default function ReportsAdminPage ({ reports }: { reports: FullReport[] }
                 {reports.map(report => (
                     <tr key={report.id}>
                         <td>{report.id}</td>
-                        <td><Link href='/auctions/[id]/[slug]' as={`/auctions/${report.auction.id}/${report.auction.slug}`}>{report.auction.title} <small>(Sold by {report.auction.seller.username})</small></Link></td>
-                        <td><Link href='/users/[id]/[username]' as={`/users/${report.user.id}/${report.user.username}`}>{report.user.username}</Link></td>
+                        <td><Link href='/auctions/[id]/[slug]' as={`/auctions/${report.auction.id}/${report.auction.slug}`}>{report.auction.title}<br /><small>(Sold by {report.auction.seller.username})</small></Link></td>
+                        <td>
+                          {report.customer != null && (
+                            <Link href='/users/[id]/[username]' as={`/users/${report.customer.id}/${report.customer.username}`}>{report.customer.username}</Link>
+                          )}
+                          {report.customerName != null && report.customerName}
+                        </td>
                         <td>{report.message}</td>
                         <td><SelectReportStatus report={report} /></td>
                     </tr>
@@ -72,6 +77,22 @@ function SelectReportStatus ({ report }: { report: Report }) {
 }
 
 export async function getServerSideProps () {
-  const reports = await prisma.report.findMany()
+  const reports = await prisma.report.findMany({
+    include: {
+      customer: {
+        select: { id: true, username: true }
+      },
+      auction: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          seller: {
+            select: { id: true, username: true }
+          }
+        }
+      }
+    }
+  })
   return { props: { reports } }
 }
