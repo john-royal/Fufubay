@@ -3,7 +3,6 @@ import { getAuctions } from 'api-lib/auctions'
 import AuctionItem from 'components/auctions/auction-item'
 import Highlight from 'components/highlight'
 import Search from 'components/layout/search'
-import { Slider } from 'components/slider'
 import { GetServerSidePropsContext } from 'next'
 import Router from 'next/router'
 
@@ -40,7 +39,7 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
       <main className='container mx-auto'>
         <br/>
         <br/>
-        <Highlight slides={Slider}/>
+        <Highlight />
         {auctions.map((row, i) => (
           <div key={i} className="columns mx-auto">
             {row.map(auction => (
