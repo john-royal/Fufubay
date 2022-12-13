@@ -70,8 +70,8 @@ export async function getSellerLoginLink (id: User['id']): Promise<{ url: string
     return await stripe.accountLinks.create({
       account: account.id,
       type: 'account_onboarding',
-      return_url: 'http://localhost:8080/account/settings',
-      refresh_url: `http://localhost:8080/api/users/${id}/seller-login`
+      return_url: `${process.env.WEBSITE_URL as string}/account/settings`,
+      refresh_url: `${process.env.WEBSITE_URL as string}/api/users/${id}/seller-login`
     })
   }
 }
