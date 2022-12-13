@@ -56,8 +56,14 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
         return 'This auction has been canceled.'
       case AuctionStatus.PENDING_REVIEW:
         return 'This auction is pending review.'
-      case AuctionStatus.LIVE:
-        return null
+      case AuctionStatus.LIVE: {
+        const isEnded = Date.now() > (auction.endsAt?.getTime() ?? 0)
+        if (isEnded) {
+          return 'This auction has ended.'
+        } else {
+          return null
+        }
+      }
       case AuctionStatus.SOLD:
         return 'This item has been sold.'
     }
@@ -86,33 +92,35 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
           </figure>
         </header>
 
+        {(auction.endsAt?.getTime() ?? 0) > Date.now() && auction.status === AuctionStatus.LIVE && (
         <div className='level is-mobile block'>
-          <div className='level-left mr-1 is-flex-grow-1'>
-            <div className='notification is-dark level is-mobile is-flex-grow-1' style={{ maxHeight: 60 }}>
-              <div className='level-item'>
-                <p>
-                  <span className='has-text-grey'>Time Left: </span>
-                  <strong className='is-capitalized'>{auction.endsAt != null ? formatDistanceToNow(auction.endsAt) : 'N/A'}</strong>
-                </p>
-              </div>
-              <div className='level-item'>
-                <p>
-                  <span className='has-text-grey'>High Bid: </span>
-                  <strong>${auction.highBid.toString() ?? '0'}</strong>
-                </p>
-              </div>
-              <div className='level-item is-hidden-mobile'>
-                <p>
-                  <span className='has-text-grey'>Bids: </span>
-                  <strong>{auction.bids.length.toString() ?? '0'}</strong>
-                </p>
-              </div>
+        <div className='level-left mr-1 is-flex-grow-1'>
+          <div className='notification is-dark level is-mobile is-flex-grow-1' style={{ maxHeight: 60 }}>
+            <div className='level-item'>
+              <p>
+                <span className='has-text-grey'>Time Left: </span>
+                <strong className='is-capitalized'>{auction.endsAt != null ? formatDistanceToNow(auction.endsAt) : 'N/A'}</strong>
+              </p>
+            </div>
+            <div className='level-item'>
+              <p>
+                <span className='has-text-grey'>High Bid: </span>
+                <strong>${auction.highBid.toString() ?? '0'}</strong>
+              </p>
+            </div>
+            <div className='level-item is-hidden-mobile'>
+              <p>
+                <span className='has-text-grey'>Bids: </span>
+                <strong>{auction.bids.length.toString() ?? '0'}</strong>
+              </p>
             </div>
           </div>
-          <div className='level-right ml-1'>
-            <button className='button is-primary is-large' onClick={() => setBidding(true)}>Bid</button>
-          </div>
         </div>
+        <div className='level-right ml-1'>
+          <button className='button is-primary is-large' onClick={() => setBidding(true)}>Bid</button>
+        </div>
+      </div>
+        )}
 
         <div className='content'>
           {auction.description}

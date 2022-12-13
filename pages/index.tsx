@@ -1,5 +1,6 @@
 import { Auction, AuctionStatus } from '@prisma/client'
 import { getAuctions } from 'api-lib/auctions'
+import prisma from 'api-lib/common/prisma'
 import AuctionItem from 'components/auctions/auction-item'
 import Highlight from 'components/highlight'
 import Search from 'components/layout/search'
@@ -55,6 +56,12 @@ export default function Home ({ auctions: initialValue }: { auctions: Auction[] 
 }
 
 export async function getServerSideProps ({ query }: GetServerSidePropsContext) {
+  await prisma.auction.update({
+    where: { id: 3 },
+    data: {
+      endsAt: new Date()
+    }
+  })
   const auctions = await getAuctions({
     status: AuctionStatus.LIVE,
     search: query.search as string | undefined
