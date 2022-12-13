@@ -1,7 +1,6 @@
 import { Auction, AuctionStatus } from '@prisma/client'
 import { getAuctions } from 'api-lib/auctions'
 import AuctionItem from 'components/auctions/auction-item'
-import Categories from 'components/auctions/categories'
 import Highlight from 'components/highlight'
 import Search from 'components/layout/search'
 import { GetServerSidePropsContext } from 'next'

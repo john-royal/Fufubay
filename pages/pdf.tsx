@@ -1,40 +1,40 @@
-import { Document, Page, View, Text, Image, PDFViewer, StyleSheet, Font } from "@react-pdf/renderer";
-import { useState, useEffect } from "react";
+import { Document, Font, Page, PDFViewer, StyleSheet, Text, View } from '@react-pdf/renderer'
+import { useEffect, useState } from 'react'
 
-Font.register( {family: "Inter", src: "/assets/font.otf"})
+Font.register({ family: 'Inter', src: '/assets/font.otf' })
 
 const styles = StyleSheet.create({
-    body: {
-        paddingTop: 20,
-        fontFamily: "Inter"
-    }
+  body: {
+    paddingTop: 20,
+    fontFamily: 'Inter'
+  }
 })
 
 const PDF = () => {
-    return(
+  return (
         <Document>
-            <Page  style={styles.body}>
-                <View style={{display: 'flex', justifyContent: "center", flexDirection: "column"}}>
-                    <Text wrap={false} style={{alignSelf: "flex-end"}}>
+            <Page style={styles.body}>
+                <View style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                    <Text wrap={false} style={{ alignSelf: 'flex-end' }}>
                         Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nam delectus velit alias laudantium aperiam fugit non, quos exercitationem voluptatum tenetur deleniti, iure sint ducimus distinctio quas eum illum tempore molestias. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa dolore totam quae nam repellendus! Pariatur dolores blanditiis ratione, temporibus, consequuntur non debitis laudantium asperiores molestias soluta quo? Cumque, alias et.
                     </Text>
                 </View>
             </Page>
         </Document>
-    )
+  )
 }
 const PDFView = () => {
+  const [, setClient] = useState(false)
 
-    const [client, setClient] = useState(false)
+  useEffect(() => {
+    setClient(true)
+  }, [])
 
-    useEffect(() => {
-        setClient(true)
-    }, [])
-
-    return(
+  return (
     <PDFViewer>
         <PDF/>
     </PDFViewer>
-    )
+  )
 }
+
 export default PDFView
