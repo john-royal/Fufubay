@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import { Slider } from './slider';
 import { FaArrowAltCircleRight, FaArrowAltCircleLeft } from 'react-icons/fa';
+import './style.module.css'
 
 const Highlight = ({slides }) => {
 
@@ -19,20 +20,18 @@ if (!Array.isArray(slides) || slides.length <= 0) {
     return null;
 }
   return (
-    <section className='columns box'>
-        &nbsp; &nbsp; &nbsp;<FaArrowAltCircleLeft className='column is-pulled-left' size={70} onClick={prevSlide}/>
+    <section className='slider'>
+        <FaArrowAltCircleLeft className='left-arrow' onClick={prevSlide}/>
+        <FaArrowAltCircleRight className='right-arrow' onClick={nextSlide}/>
     {Slider.map((slide, index) => {
         return (
             <div className={index === current ? 'slides active' : 'slide'} key={index}>
-                <div className='column is-full'>
                 {index === current && (
-                    <img src={slide.image} alt="test"/>
+                    <img src={slide.image} alt="test" className='picture'/>
                 )} &nbsp;
                 </div>
-            </div>
         )
     })}
-        <FaArrowAltCircleRight className=' column' size={70} onClick={nextSlide}/> &nbsp; &nbsp; &nbsp;
     </section>
   )
 }
