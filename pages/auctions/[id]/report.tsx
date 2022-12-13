@@ -12,9 +12,16 @@ const Report = ({ isVisible, onClose }) => {
                     <Form onSubmit={function (event: FormEvent<HTMLFormElement>): void | Promise<void> {
                         throw new Error("Function not implemented.");
                     } }>
+
         <TextField title='Comments' type='text' name='Issues' />
-        <Button title='Submit' />
-        <Button title='Report a Crime' />
+        <div className="field is-grouped">
+        <p className="control">
+           <Button className="button is-primary is-pulled-left" title='Submit' />
+        </p>
+        <p className="control">
+            <Button className="button is-info is-pulled-right" title='Report a Crime' />
+        </p>
+        </div>
       </Form>
                 </div>
             </div>
