@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import { Slider } from './slider';
 import { FaArrowAltCircleRight, FaArrowAltCircleLeft } from 'react-icons/fa';
-import './style.module.css'
 
 const Highlight = ({slides }) => {
 
