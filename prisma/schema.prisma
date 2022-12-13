@@ -56,8 +56,6 @@ model Review {
   customer   User    @relation("authored-reviews", fields: [customerId], references: [id])
   sellerId   Int
   customerId Int
-
-  @@unique([sellerId, customerId])
 }
 
 model Report {
