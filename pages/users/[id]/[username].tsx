@@ -1,10 +1,10 @@
-import { Auction, Bid, User } from '@prisma/client'
+import { Auction, AuctionStatus, Bid, BidStatus, User } from '@prisma/client'
 import { getUser } from 'api-lib/users'
 import AuctionRow from 'components/auctions/auction-row'
 import UserHeader from 'components/users/user-header'
 import { GetServerSidePropsResult } from 'next'
 
-type UserProfile = Pick<User, 'id' | 'username' | 'bio' | 'imageUrl' | 'createdAt'> & { auctions: Auction[], bids: Bid[], rating: number | null }
+type UserProfile = Pick<User, 'id' | 'username' | 'bio' | 'imageUrl' | 'createdAt'> & { auctions: Auction[], bids: Array<Bid & { auction: Auction }>, rating: number | null }
 
 export default function UserPage ({ user }: { user: UserProfile }) {
   return (
@@ -20,9 +20,26 @@ export default function UserPage ({ user }: { user: UserProfile }) {
         <hr />
         <section>
           <h2 className='title'>Bids</h2>
-          <pre>
-            {JSON.stringify(user.bids, null, 2)}
-          </pre>
+        {user.bids.map(bid =>
+            <AuctionRow key={bid.id} auction={bid.auction}>
+                {bid.status === BidStatus.WIN
+                  ? (
+                    <div className='tags are-medium'>
+                        <span className='tag is-dark'>
+                            <span className='has-text-grey'>Bid&nbsp;</span>
+                            <strong className='has-text-white'>${bid.amount}</strong>
+                        </span>
+                        <span className='tag is-primary'>Winner</span>
+                    </div>
+                    )
+                  : (
+                    <span className='tag is-medium is-dark'>
+                        <span className='has-text-grey'>Bid&nbsp;</span>
+                        <strong className='has-text-white'>${bid.amount}</strong>
+                    </span>
+                    )}
+            </AuctionRow>
+        )}
         </section>
       </div>
   )
@@ -35,7 +52,7 @@ export async function getServerSideProps ({ params: { id, username } }: { params
     bio: true,
     imageUrl: true,
     createdAt: true,
-    auctions: true,
+    auctions: { where: { status: { notIn: [AuctionStatus.CANCELED, AuctionStatus.PENDING_REVIEW] } } },
     bids: { include: { auction: true } },
     rating: true
   }) as unknown as UserProfile
