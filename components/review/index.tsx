@@ -8,7 +8,7 @@ import Star from './star'
 export type ReviewModalProps = { sellerId: number } & ModalProps
 
 export default function ReviewModal ({ sellerId, isActive, handleClose }: ReviewModalProps) {
-  const { user } = useUser()
+  const { user } = useUser({ redirect: false })
   const [rating, setRating] = useState(0)
   const [comments, setComments] = useState('')
 
