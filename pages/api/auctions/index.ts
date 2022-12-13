@@ -11,6 +11,8 @@ export default Router.for(
         title: Joi.string().required(),
         subtitle: Joi.string().required(),
         description: Joi.string().required(),
+        startsAt: Joi.date().required(),
+        endsAt: Joi.date().required(),
         sellerId: Joi.number().integer().required()
       })
     },

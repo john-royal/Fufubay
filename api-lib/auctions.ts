@@ -6,6 +6,7 @@ import { readFile } from 'fs/promises'
 import { extname } from 'path'
 import s3 from './common/s3'
 import stripe from './common/stripe'
+import { getSellerAccount } from './users'
 
 export async function isAuthorized (userId: User['id'], auctionId: Auction['id']): Promise<boolean> {
   const { sellerId } = await prisma.auction.findUniqueOrThrow({
@@ -15,11 +16,11 @@ export async function isAuthorized (userId: User['id'], auctionId: Auction['id']
   return userId === sellerId
 }
 
-export interface CreateAuctionInput { title: string, subtitle: string, description: string, sellerId: User['id'] }
+export interface CreateAuctionInput { title: string, subtitle: string, description: string, startsAt: Date, endsAt: Date, sellerId: User['id'] }
 
-export async function createAuction ({ title, subtitle, description, sellerId }: CreateAuctionInput): Promise<Auction> {
-  const { isSeller } = await prisma.user.findUniqueOrThrow({ select: { isSeller: true }, where: { id: sellerId } })
-  if (!isSeller) {
+export async function createAuction ({ title, subtitle, description, startsAt, endsAt, sellerId }: CreateAuctionInput): Promise<Auction> {
+  const { charges_enabled: chargesEnabled } = await getSellerAccount(sellerId)
+  if (!chargesEnabled) {
     throw new ForbiddenError('Your account does not have a payout account set up.')
   }
   const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
@@ -32,12 +33,23 @@ export async function createAuction ({ title, subtitle, description, sellerId }:
   if (canceledSimilarItemCount > 0) {
     throw new BadRequestError('This item has been banned. For more information, contact a super user.')
   }
+  if (startsAt.getTime() <= Date.now()) {
+    throw new BadRequestError('The start date must be in the future.')
+  }
+  if (endsAt.getTime() <= startsAt.getTime()) {
+    throw new BadRequestError('The end date must be after the start date.')
+  }
+  if (endsAt.getTime() - startsAt.getTime() >= (7 * 86400 * 1000)) {
+    throw new BadRequestError('The auction cannot be longer than 7 days.')
+  }
   return await prisma.auction.create({
     data: {
       title,
       subtitle,
       description,
       slug,
+      startsAt,
+      endsAt,
       seller: { connect: { id: sellerId } }
     }
   })

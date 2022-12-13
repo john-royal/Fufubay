@@ -46,10 +46,6 @@ model User {
   addressCountry    String?
 
   stripeAccountId  String
-  isSeller         Boolean   @default(false)
-  bankAccountId    String?
-  bankAccountName  String?
-  bankAccountLast4 String?
   auctions         Auction[]
   sellerReviews    Review[]  @relation("seller-reviews")
   sellerReports    Report[]  @relation("seller-reports")

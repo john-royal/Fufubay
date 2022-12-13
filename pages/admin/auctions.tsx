@@ -26,7 +26,7 @@ export default function AuctionsAdminPage ({ auctions }: { auctions: SellerAucti
                 {auctions.map(auction => (
                     <tr key={auction.id}>
                         <td>{auction.id}</td>
-                        <td><Link href='/auctions/[id]/[slug]' as={`/auctions/${auction.id}/${auction.slug}`}>{auction.title}</Link></td>
+                        <td><Link href='/admin/auctions/[id]/[slug]' as={`/auctions/${auction.id}/${auction.slug}`}>{auction.title}</Link></td>
                         <td><Link href='/users/[id]/[username]' as={`/users/${auction.seller.id}/${auction.seller.username}`}>{auction.seller.username}</Link></td>
                         <td>{auction.startsAt?.toLocaleDateString()}</td>
                         <td>{auction.endsAt?.toLocaleDateString()}</td>
@@ -50,8 +50,8 @@ function SelectAuctionStatus ({ auction }: { auction: Auction }) {
 
     if (value === AuctionStatus.LIVE) {
       const MILLISECONDS_IN_A_WEEK = 7 * 24 * 60 * 60 * 1000
-      body.startsAt = new Date()
-      body.endsAt = new Date(Date.now() + MILLISECONDS_IN_A_WEEK)
+      body.startsAt = auction.startsAt ?? new Date()
+      body.endsAt = auction.endsAt ?? new Date(Date.now() + MILLISECONDS_IN_A_WEEK)
     }
 
     request({

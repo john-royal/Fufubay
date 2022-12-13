@@ -11,6 +11,8 @@ export default function CreateAuctionPage () {
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [description, setDescription] = useState('')
+  const [startsAt, setStartsAt] = useState('')
+  const [endsAt, setEndsAt] = useState('')
   const [image, setImage] = useState<File | null>(null)
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -33,6 +35,8 @@ export default function CreateAuctionPage () {
         title,
         subtitle,
         description,
+        startsAt: new Date(startsAt),
+        endsAt: new Date(endsAt),
         sellerId: user?.id as number
       }
     })
@@ -48,6 +52,8 @@ export default function CreateAuctionPage () {
         <TextField title='Title' type='text' id='title' name='title' value={title} onChange={e => setTitle(e.target.value)}/>
         <TextField title='Subtitle' type='text' id='subtitle' name='subtitle' value={subtitle} onChange={e => setSubtitle(e.target.value)} />
         <TextArea title='Description' id='description' name='description' value={description} onChange={e => setDescription(e.target.value)} />
+        <TextField type='date' title='Start Date' id='startsAt' name='startsAt' value={startsAt} onChange={e => setStartsAt(e.target.value)} />
+        <TextField type='date' title='End Date' id='endsAt' name='endsAt' value={endsAt} onChange={e => setEndsAt(e.target.value)} />
         <ImageField onImageChange={setImage} />
         <Button title='Create' className='mt-5' />
       </Form>

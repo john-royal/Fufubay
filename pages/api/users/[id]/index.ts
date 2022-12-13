@@ -39,7 +39,7 @@ export default Router.for([
         email: Joi.string().email(),
         phone: Joi.string().replace(/\D/g, '').length(10).pattern(/^\d+$/),
         password: Joi.string(),
-        bio: Joi.string().allow(''),
+        bio: Joi.string().allow(null),
         imageUrl: Joi.string().uri()
       })
     },
