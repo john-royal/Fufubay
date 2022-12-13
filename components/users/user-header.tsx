@@ -5,7 +5,7 @@ import { makeImageUrl } from '../../lib/images'
 export interface Props {
   username: string
   imageUrl: string
-  bio: string
+  bio: string | null
   createdAt: Date
   rating: number | null
   children?: ReactNode
@@ -41,7 +41,7 @@ export default function UserHeader ({ username, imageUrl, bio, createdAt, rating
             </>)
               : (<></>)}
         </div>
-        {bio !== '' ? <p>{bio}</p> : <></>}
+        {bio != null ? <p>{bio}</p> : <></>}
     </header>
   )
 }

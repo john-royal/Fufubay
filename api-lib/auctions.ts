@@ -1,7 +1,6 @@
 import { Auction, AuctionStatus, Bid, BidStatus, Prisma, User } from '@prisma/client'
 import { BadRequestError, ForbiddenError, InternalServerError } from 'api-lib/common/errors'
 import prisma from 'api-lib/common/prisma'
-import { getSellerAccount } from 'api-lib/users'
 import { File } from 'formidable'
 import { readFile } from 'fs/promises'
 import { extname } from 'path'
@@ -16,11 +15,11 @@ export async function isAuthorized (userId: User['id'], auctionId: Auction['id']
   return userId === sellerId
 }
 
-export interface CreateAuctionInput {title: string, description: string, sellerId: User['id']}
+export interface CreateAuctionInput { title: string, subtitle: string, description: string, sellerId: User['id'] }
 
-export async function createAuction ({ title, description, sellerId }: CreateAuctionInput): Promise<Auction> {
-  const account = await getSellerAccount(sellerId)
-  if (!account.charges_enabled) {
+export async function createAuction ({ title, subtitle, description, sellerId }: CreateAuctionInput): Promise<Auction> {
+  const { isSeller } = await prisma.user.findUniqueOrThrow({ select: { isSeller: true }, where: { id: sellerId } })
+  if (!isSeller) {
     throw new ForbiddenError('Your account does not have a payout account set up.')
   }
   const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
@@ -36,6 +35,7 @@ export async function createAuction ({ title, description, sellerId }: CreateAuc
   return await prisma.auction.create({
     data: {
       title,
+      subtitle,
       description,
       slug,
       seller: { connect: { id: sellerId } }

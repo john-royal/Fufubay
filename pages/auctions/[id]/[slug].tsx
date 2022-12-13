@@ -3,7 +3,6 @@ import prisma from 'api-lib/common/prisma'
 import { getSellerRating } from 'api-lib/users'
 import BidModal from 'components/bids/bid-form'
 import { BidItem } from 'components/bids/bid-item'
-import ReviewModal from 'components/review'
 import formatDistanceToNow from 'date-fns/formatDistanceToNow'
 import { makeImageUrl } from 'lib/images'
 import request from 'lib/request'
@@ -24,17 +23,16 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
   const [bidding, setBidding] = useState(false)
   const [refresh, setRefresh] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [reviewing, setReviewing] = useState(false)
   const [reporting, setReporting] = useState(false)
 
   useEffect(() => {
-    if (bidding || reviewing) {
+    if (bidding) {
       setRefresh(true)
     } else if (refresh) {
       setRefresh(false)
       void Router.replace(Router.asPath)
     }
-  }, [refresh, reviewing, bidding])
+  }, [refresh, bidding])
 
   const handleFinalize = (id: Bid['id']) => {
     setLoading(true)
@@ -52,17 +50,29 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
       .finally(() => setLoading(false))
   }
 
+  const auctionStatusNotification = (() => {
+    switch (auction.status) {
+      case AuctionStatus.CANCELED:
+        return 'This auction has been canceled.'
+      case AuctionStatus.PENDING_REVIEW:
+        return 'This auction is pending review.'
+      case AuctionStatus.LIVE:
+        return null
+      case AuctionStatus.SOLD:
+        return 'This item has been sold.'
+    }
+  })()
+
   return (
     <>
     <div className='container p-5 mx-auto'>
       <BidModal isActive={bidding} handleClose={() => setBidding(false)} auctionId={auction.id} />
-      <ReviewModal sellerId={auction.seller.id} isActive={reviewing} handleClose={() => setReviewing(false)} />
+      <Report isVisible={reporting} onClose={ () => setReporting(false)} />
 
-      {/* TODO: Add some quick options (e.g. accept, deny, cancel) for admins here. */}
-      {auction.status === AuctionStatus.PENDING_REVIEW
+      {auctionStatusNotification != null
         ? (
           <div className='notification is-dark'>
-            <p>This auction is pending review.</p>
+            <p>{auctionStatusNotification}</p>
           </div>
           )
         : <></>}
@@ -70,7 +80,7 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
       <main className='column is-two-thirds-desktop'>
         <header className='block'>
           <h1 className='title'>{auction.title}</h1>
-          <p className='subtitle'>{auction.description} <button className="button is-pulled-right button is-small button is-link" onClick={() => setReporting(true)}>Report</button></p>
+          <p className='subtitle'>{auction.subtitle} <button className='button is-pulled-right button is-small button is-link' onClick={() => setReporting(true)}>Report</button></p>
           <figure className='image is-4by3'>
             <Image src={auction.imageUrl} alt={auction.title} width={740} height={555} priority loader={makeImageUrl} />
           </figure>
@@ -104,6 +114,10 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
           </div>
         </div>
 
+        <div className='content'>
+          {auction.description}
+        </div>
+
         <h2 className='title is-3'>Bids</h2>
         <ul className='list'>
           {auction.bids.map(bid => (
@@ -113,7 +127,6 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
                   <button className={`button is-small ${loading ? 'is-loading' : ''}`} onClick={() => handleFinalize(bid.id)}>Select Winning Bid</button>
                   )
                 : <></>}
-              <button className='button is-light is-small' onClick={() => setReviewing(true)}>Rate</button>
             </BidItem>
           ))}
         </ul>
@@ -124,7 +137,6 @@ export default function AuctionPage ({ auction }: { auction: FullAuction }) {
         <SellerPreview seller={auction.seller} />
       </aside>
     </div>
-    <Report isVisible={reporting} onClose={ () => setReporting(false)} />
     </>
   )
 }

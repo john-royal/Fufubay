@@ -19,7 +19,7 @@ export default function AuctionRow ({ auction, children }: { auction: Auction, c
                 <div className='content'>
                     <div className='content'>
                         <p className="title is-6 mb-1">{auction.title}</p>
-                        <p className="is-size-7 has-text-dark">{auction.description}</p>
+                        <p className="is-size-7 has-text-dark">{auction.subtitle}</p>
                         <StatusTag auction={auction} />
                     </div>
                 </div>

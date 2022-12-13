@@ -11,14 +11,15 @@ export default function ProfileModal () {
   const { handleClose } = useModal()
 
   const [username, setUsername] = useState(user.username)
-  const [bio, setBio] = useState(user.bio)
+  const [bio, setBio] = useState(user.bio ?? '')
   const [image, setImage] = useState<File | null>(null)
 
   const handleSubmit = async () => {
+    const body = { username, bio: bio !== '' ? bio : null }
     await request({
       method: 'PATCH',
       url: `/api/users/${user.id}`,
-      body: { username, bio }
+      body
     })
     if (image != null) {
       await uploadImage(`/api/users/${user.id}/image`, image)

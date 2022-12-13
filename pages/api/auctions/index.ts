@@ -9,6 +9,7 @@ export default Router.for(
     schema: {
       body: Joi.object({
         title: Joi.string().required(),
+        subtitle: Joi.string().required(),
         description: Joi.string().required(),
         sellerId: Joi.number().integer().required()
       })

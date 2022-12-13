@@ -1,5 +1,5 @@
 import { Auction } from '@prisma/client'
-import { Button, Form, ImageField, TextField } from 'components/common/form'
+import { Button, Form, ImageField, TextArea, TextField } from 'components/common/form'
 import { uploadImage } from 'lib/images'
 import request from 'lib/request'
 import useUser from 'lib/user'
@@ -9,12 +9,16 @@ import { FormEvent, useState } from 'react'
 export default function CreateAuctionPage () {
   const { user } = useUser()
   const [title, setTitle] = useState('')
+  const [subtitle, setSubtitle] = useState('')
   const [description, setDescription] = useState('')
   const [image, setImage] = useState<File | null>(null)
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     if (title === '') {
       throw new Error('Please enter a title.')
+    }
+    if (subtitle === '') {
+      throw new Error('Please enter a subtitle.')
     }
     if (description === '') {
       throw new Error('Please enter a description.')
@@ -27,6 +31,7 @@ export default function CreateAuctionPage () {
       url: '/api/auctions',
       body: {
         title,
+        subtitle,
         description,
         sellerId: user?.id as number
       }
@@ -41,7 +46,8 @@ export default function CreateAuctionPage () {
 
       <Form onSubmit={handleSubmit}>
         <TextField title='Title' type='text' id='title' name='title' value={title} onChange={e => setTitle(e.target.value)}/>
-        <TextField title='Description' type='text' id='description' name='description' value={description} onChange={e => setDescription(e.target.value)} />
+        <TextField title='Subtitle' type='text' id='subtitle' name='subtitle' value={subtitle} onChange={e => setSubtitle(e.target.value)} />
+        <TextArea title='Description' id='description' name='description' value={description} onChange={e => setDescription(e.target.value)} />
         <ImageField onImageChange={setImage} />
         <Button title='Create' className='mt-5' />
       </Form>

@@ -19,53 +19,66 @@ enum UserRole {
 }
 
 model User {
-  id                  Int       @id @default(autoincrement())
-  username            String    @unique
-  email               String    @unique
-  phone               String?   @unique
-  password            String
-  bio                 String    @default("")
-  imageUrl            String    @default("https://csc-32200-fufubay-images.s3.amazonaws.com/users/user-placeholder.png")
-  addressLine1        String?
-  addressLine2        String?
-  addressCity         String?
-  addressState        String?
-  addressPostalCode   String?
-  addressCountry      String?
+  id Int @id @default(autoincrement())
+
+  username String  @unique
+  email    String  @unique
+  phone    String? @unique
+  password String
+  bio      String?
+  imageUrl String  @default("https://csc-32200-fufubay-images.s3.amazonaws.com/users/user-placeholder.png")
+
+  stripeCustomerId    String
   paymentCardId       String?
   paymentCardLast4    String?
   paymentCardBrand    String?
   paymentCardExpMonth Int?
   paymentCardExpYear  Int?
-  createdAt           DateTime  @default(now())
-  role                UserRole  @default(PENDING_REVIEW)
-  stripeAccountId     String
-  stripeCustomerId    String
-  auctions            Auction[]
-  reports             Report[]
+  customerReviews     Review[] @relation("customer-reviews")
+  customerReports     Report[] @relation("customer-reports")
   bids                Bid[]
-  authoredReviews     Review[]  @relation("authored-reviews")
-  reviews             Review[]  @relation("reviews")
+
+  addressLine1      String?
+  addressLine2      String?
+  addressCity       String?
+  addressState      String?
+  addressPostalCode String?
+  addressCountry    String?
+
+  stripeAccountId  String
+  isSeller         Boolean   @default(false)
+  bankAccountId    String?
+  bankAccountName  String?
+  bankAccountLast4 String?
+  auctions         Auction[]
+  sellerReviews    Review[]  @relation("seller-reviews")
+  sellerReports    Report[]  @relation("seller-reports")
+
+  createdAt DateTime @default(now())
+  role      UserRole @default(PENDING_REVIEW)
 }
 
 model Review {
   id         Int     @id @default(autoincrement())
   rating     Int
   comments   String?
-  seller     User    @relation("reviews", fields: [sellerId], references: [id])
-  customer   User    @relation("authored-reviews", fields: [customerId], references: [id])
+  seller     User    @relation("seller-reviews", fields: [sellerId], references: [id])
+  customer   User    @relation("customer-reviews", fields: [customerId], references: [id])
   sellerId   Int
   customerId Int
 }
 
 model Report {
-  id         Int      @id @default(autoincrement())
-  message    String
-  isResolved Boolean  @default(false)
-  user       User?    @relation(fields: [userId], references: [id])
-  auction    Auction? @relation(fields: [auctionId], references: [id])
-  auctionId  Int?
-  userId     Int?
+  id           Int     @id @default(autoincrement())
+  customerName String?
+  message      String
+  isResolved   Boolean @default(false)
+  auction      Auction @relation(fields: [auctionId], references: [id])
+  seller       User    @relation("seller-reports", fields: [sellerId], references: [id])
+  customer     User?   @relation("customer-reports", fields: [customerId], references: [id])
+  auctionId    Int
+  sellerId     Int
+  customerId   Int?
 }
 
 enum AuctionStatus {
@@ -78,6 +91,7 @@ enum AuctionStatus {
 model Auction {
   id           Int           @id @default(autoincrement())
   title        String
+  subtitle     String
   description  String
   slug         String
   imageUrl     String        @default("https://csc-32200-fufubay-images.s3.amazonaws.com/auctions/auction-placeholder.png")
@@ -85,6 +99,7 @@ model Auction {
   createdAt    DateTime      @default(now())
   startsAt     DateTime?
   endsAt       DateTime?
+  resultReason String?
   sellerId     Int
   seller       User          @relation(fields: [sellerId], references: [id])
   bids         Bid[]

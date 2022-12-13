@@ -78,6 +78,7 @@ export const getServerSideProps = withIronSessionSsr<SettingsProps & { [key: str
     getUser(id, { rating: true }),
     getSellerAccount(id)
   ])
+  console.dir(account, { depth: null })
   const sections = {
     Account: { [SettingsItem.PASSWORD]: '*********' },
     Contact: {

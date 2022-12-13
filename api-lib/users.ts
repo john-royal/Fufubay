@@ -100,7 +100,11 @@ export async function patchUser (id: User['id'], data: PatchUserInput): Promise<
   return user
 }
 
-export interface PostUserInput { username: string, email: string, password: string }
+export interface PostUserInput {
+  username: string
+  email: string
+  password: string
+}
 
 export async function postUser ({ username, email, password }: PostUserInput): Promise<User> {
   const data: Prisma.UserCreateInput = {
@@ -131,6 +135,7 @@ export async function postUser ({ username, email, password }: PostUserInput): P
     return await tx.user.update({
       where: { id },
       data: {
+        role: id === 1 ? UserRole.SUPER_USER : UserRole.PENDING_REVIEW,
         stripeAccountId: account.id,
         stripeCustomerId: customer.id
       }

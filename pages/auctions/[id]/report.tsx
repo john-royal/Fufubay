@@ -1,33 +1,43 @@
+import { Auction } from '@prisma/client'
 import { Button, Form, TextField } from 'components/common/form'
-import { FormEvent } from 'react'
+import Modal, { ModalProps } from 'components/common/modal'
+import request from 'lib/request'
+import useUser from 'lib/user'
+import { useState } from 'react'
 
-const Report = ({ isVisible, onClose }: { isVisible: boolean, onClose: () => void }) => {
-  if (!isVisible) return null
+export type ReviewModalProps = { auction: Auction } & ModalProps
+
+export default function ReviewModal ({ auction, isActive, handleClose }: ReviewModalProps) {
+  const { user } = useUser({ redirect: false })
+  const [name, setName] = useState('')
+  const [comments, setComments] = useState('')
+
+  const handleSubmit = async () => {
+    if (user?.id == null) {
+      throw new Error('You must be signed in to submit a report.')
+    }
+    await request({
+      url: '/api/reports',
+      method: 'POST',
+      body: {
+        customerName: user.id == null ? name : undefined,
+        comments,
+        auctionId: auction.id,
+        customerId: user.id,
+        sellerId: auction.sellerId
+      }
+    })
+    handleClose()
+  }
+
   return (
-        <div className="modal is-active">
-             <div className="modal-background">
-                <button className="button is-dark" onClick={() => onClose()}>X</button>
-                <div className="modal-content has-background-white py-5 px-5">
-                    <h3 className="title mb-6">Report Seller</h3>
-                    <Form onSubmit={function (event: FormEvent<HTMLFormElement>): void | Promise<void> {
-                      throw new Error('Function not implemented.')
-                    } }>
-
-        <TextField title='Comments' type='text' name='Issues' />
-        <div className="field is-grouped">
-        <p className="control">
-           <Button className="button is-primary is-pulled-left" title='Submit' />
-        </p>
-        <p className="control">
-            <Button className="button is-info is-pulled-right" title='Report a Crime' />
-        </p>
-        </div>
+    <Modal isActive={isActive} handleClose={handleClose}>
+      <Form onSubmit={handleSubmit}>
+        <h3 className="title mb-6">Report Seller</h3>
+        {user == null ? <TextField title='Name' type='text' name='name' value={name} onChange={e => setName(e.target.value)} /> : <></>}
+        <TextField title='Comments' type='text' name='comments' value={comments} onChange={e => setComments(e.target.value)} />
+        <Button title='Submit' />
       </Form>
-                </div>
-            </div>
-
-        </div>
+    </Modal>
   )
 }
-
-export default Report

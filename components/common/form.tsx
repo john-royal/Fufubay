@@ -1,4 +1,4 @@
-import { ChangeEvent, createContext, FormEvent, HTMLInputTypeAttribute, InputHTMLAttributes, PropsWithChildren, useContext, useState } from 'react'
+import { ChangeEvent, createContext, FormEvent, HTMLInputTypeAttribute, InputHTMLAttributes, PropsWithChildren, TextareaHTMLAttributes, useContext, useState } from 'react'
 
 const ButtonContext = createContext(false)
 
@@ -45,6 +45,19 @@ export function TextField (props: InputHTMLAttributes<HTMLInputElement> & {
   return (
     <Field title={props.title} id={props.name}>
         <input className='input' {...props} placeholder={props.placeholder ?? props.title} disabled={props.disabled ?? working}/>
+    </Field>
+  )
+}
+
+export function TextArea (props: TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  title: string
+  name: string
+}) {
+  const working = useContext(ButtonContext)
+
+  return (
+    <Field title={props.title} id={props.name}>
+      <textarea className='textarea' {...props} placeholder={props.placeholder ?? props.title} disabled={props.disabled ?? working}></textarea>
     </Field>
   )
 }
